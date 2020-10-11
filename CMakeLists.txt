@@ -21,7 +21,7 @@ file(GLOB_RECURSE kernel-src
 
 add_executable(HryOS ${kernel-src})
 
-file(COPY ${PROJECT_SOURCE_DIR}/grub.cfg DESTINATION ${PROJECT_SOURCE_DIR}/iso/boot/grub)
+file(COPY ${PROJECT_SOURCE_DIR}/config/grub.cfg DESTINATION ${PROJECT_SOURCE_DIR}/iso/boot/grub)
 
 add_custom_command(TARGET HryOS POST_BUILD VERBATIM
     COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:HryOS>" ${PROJECT_SOURCE_DIR}/iso/boot/HryOS.bin)
