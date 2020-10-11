@@ -1,0 +1,22 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build ISO",
+            "type": "shell",
+            "command": "grub-mkrescue -o HryOS.iso iso",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Emulator",
+            "type": "shell",
+            "command": "qemu-system-i386 -cdrom HryOS.iso",
+            "dependsOn": [
+                "Build ISO"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
