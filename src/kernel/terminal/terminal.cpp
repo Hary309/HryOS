@@ -25,7 +25,7 @@ namespace terminal
         current_color.foreground = color::white;
     }
 
-    void put_char_at(char ch, vec2u pos)
+    void put_char_at(char ch, const vec2u& pos)
     {
         auto* entry = cursor.get_entry(pos);
         entry->set_character(ch);
@@ -77,6 +77,11 @@ namespace terminal
 
     void move_cursor(vec2u pos) { cursor_pos = pos; }
 
+    void set_color(color foreground, color background)
+    {
+        set_foreground_color(foreground);
+        set_background_color(background);
+    }
     void set_foreground_color(color color) { current_color.foreground = color; }
     void set_background_color(color color) { current_color.background = color; }
 } // namespace terminal

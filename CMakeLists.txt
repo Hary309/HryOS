@@ -8,19 +8,19 @@ set(CMAKE_CXX_COMPILER_WORKS 1)
 project(HryOS C CXX ASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "-ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti")
-set(CMAKE_C_FLAGS "-ffreestanding -O2 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffreestanding -Wall -Wextra")
 set(LINKER_SCRIPT "${PROJECT_SOURCE_DIR}/scripts/linker.ld")
-set(CMAKE_EXE_LINKER_FLAGS "-T ${LINKER_SCRIPT} -ffreestanding -O2 -nostdlib -lgcc" )
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${LINKER_SCRIPT} -ffreestanding -nostdlib -lgcc" )
 
 file(GLOB_RECURSE kernel-src
-    kernel/*.cpp
-    kernel/*.c
-    kernel/*.s)
+    src/kernel/*.cpp
+    src/kernel/*.c
+    src/kernel/*.s)
 
 add_executable(HryOS ${kernel-src})
 
-target_include_directories(HryOS PRIVATE stdlib kernel)
+target_include_directories(HryOS PRIVATE src/kernel)
 
 file(COPY ${PROJECT_SOURCE_DIR}/config/grub.cfg DESTINATION ${PROJECT_SOURCE_DIR}/iso/boot/grub)
 
