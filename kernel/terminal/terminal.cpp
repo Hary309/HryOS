@@ -79,5 +79,4 @@ namespace terminal
 
     void set_foreground_color(color color) { current_color.foreground = color; }
     void set_background_color(color color) { current_color.background = color; }
-
 } // namespace terminal
