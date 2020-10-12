@@ -15,15 +15,12 @@ namespace terminal
 
     void put_char(char ch);
 
-    void raw_print(const char* msg);
-
-    inline void print(const char* msg)
-    {
-        raw_print(msg);        
-    }
+    void print(const char* msg);
+    void print_line(const char* msg);
 
     void move_cursor(vec2u pos);
 
     void set_foreground_color(color color);
     void set_background_color(color color);
-}
+
+} // namespace terminal

@@ -1,19 +1,17 @@
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "terminal/color.hpp"
+#include "terminal/terminal.hpp"
 
 #include "multiboot.h"
 
-#include "terminal/color.hpp"
-#include "terminal/terminal.hpp"
- 
-
-extern "C" void kernel_main() 
+extern "C" void kernel_main()
 {
-	terminal::init();
+    terminal::init();
 
-	terminal::print("Hry");
+    terminal::print("Hry");
+    terminal::set_foreground_color(terminal::color::cyan);
+    terminal::print_line("OS!");
 
-	terminal::set_foreground_color(terminal::color::cyan);
-	terminal::print("OS!");
+    terminal::set_background_color(terminal::color::green);
+    terminal::set_foreground_color(terminal::color::blue);
+    terminal::print_line("Is awesome!");
 }

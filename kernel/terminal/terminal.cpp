@@ -4,30 +4,22 @@
 
 #include "utils/string.hpp"
 
-#include "display_cursor.hpp"
+#include "cursor.hpp"
+#include "entry.hpp"
 
 namespace terminal
 {
     static constexpr auto DisplayAddress = 0xB8000;
 
     static vec2u cursor_pos;
+    static cursor cursor;
+
     static combined_color current_color;
-    static uint16_t* buffer;
-
-    uint16_t vga_entry(unsigned char ch, uint8_t color) 
-    {
-        return static_cast<uint16_t>(ch) | static_cast<uint16_t>(color << 8);
-    }
-
-    uint32_t get_index(vec2u pos)
-    {
-        return pos.y * Width + pos.x;
-    }
 
     void init()
     {
+        cursor = { DisplayAddress, { Width, Height } };
         cursor_pos = { 0, 0 };
-        buffer = reinterpret_cast<uint16_t*>(Display);
 
         current_color.background = color::black;
         current_color.foreground = color::white;
@@ -35,7 +27,9 @@ namespace terminal
 
     void put_char_at(char ch, vec2u pos)
     {
-        buffer[get_index(pos)] = vga_entry(ch, current_color.value());
+        auto* entry = cursor.get_entry(pos);
+        entry->set_character(ch);
+        entry->set_color(current_color);
     }
 
     void put_char(char ch)
@@ -58,12 +52,12 @@ namespace terminal
         {
             for (uint32_t x = 0; x < Width; x++)
             {
-                put_char_at(' ', {x, y});
+                put_char_at(' ', { x, y });
             }
         }
     }
 
-    void raw_print(const char* msg)
+    void print(const char* msg)
     {
         while (*msg)
         {
@@ -72,19 +66,18 @@ namespace terminal
         }
     }
 
-    void move_cursor(vec2u pos)
+    void print_line(const char* msg)
     {
-        cursor_pos = pos;
+        print(msg);
+        cursor_pos.x = 0;
+        cursor_pos.y++;
+
+        cursor_pos.y %= Height;
     }
 
-    void set_foreground_color(color color)
-    {
-        current_color.foreground = color;
-    }
+    void move_cursor(vec2u pos) { cursor_pos = pos; }
 
-    void set_background_color(color color)
-    {
-        current_color.background = color;
-    }
+    void set_foreground_color(color color) { current_color.foreground = color; }
+    void set_background_color(color color) { current_color.background = color; }
 
-}
+} // namespace terminal
