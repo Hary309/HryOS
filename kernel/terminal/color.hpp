@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 namespace terminal
 {
     enum class color
@@ -21,4 +23,15 @@ namespace terminal
         light_brown = 14,
         white = 15,
     };
-}
+
+    struct combined_color
+    {
+        color foreground;
+        color background;
+
+        uint8_t value()
+        {
+            return static_cast<uint8_t>(foreground) | static_cast<uint8_t>(background) << 4;
+        }
+    };
+} // namespace terminal

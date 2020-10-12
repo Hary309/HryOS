@@ -8,18 +8,7 @@
 
 namespace terminal
 {
-    struct combined_color
-    {
-        color foreground;
-        color background;
-
-        uint8_t value()
-        {
-            return static_cast<uint8_t>(foreground) | static_cast<uint8_t>(background) << 4;
-        }
-    };
-
-    static constexpr auto Display = 0xB8000;
+    static constexpr auto DisplayAddress = 0xB8000;
 
     static vec2u cursor_pos;
     static combined_color current_color;
