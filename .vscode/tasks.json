@@ -17,6 +17,15 @@
                 "Build ISO"
             ],
             "problemMatcher": []
+        },
+        {
+            "label": "Run Emulator in GDB mode",
+            "type": "shell",
+            "command": "qemu-system-i386 -s -S -cdrom HryOS.iso",
+            "dependsOn": [
+                "Build ISO"
+            ],
+            "problemMatcher": [],
         }
     ]
 }
