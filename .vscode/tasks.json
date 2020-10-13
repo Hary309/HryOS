@@ -12,6 +12,12 @@
         {
             "label": "Run Emulator",
             "type": "shell",
+            "command": "qemu-system-i386 -kernel build/HryOS",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Emulator CD-ROM",
+            "type": "shell",
             "command": "qemu-system-i386 -cdrom HryOS.iso",
             "dependsOn": [
                 "Build ISO"
@@ -21,10 +27,7 @@
         {
             "label": "Run Emulator in GDB mode",
             "type": "shell",
-            "command": "qemu-system-i386 -s -S -cdrom HryOS.iso",
-            "dependsOn": [
-                "Build ISO"
-            ],
+            "command": "qemu-system-i386 -s -S -kernel build/HryOS",
             "problemMatcher": [],
         }
     ]

@@ -8,8 +8,12 @@
             "name": "Attach to QEMU",
             "type": "lldb",
             "request": "custom",
-            "targetCreateCommands": ["target create ${workspaceFolder}/build/HryOS"],
-            "processCreateCommands": ["gdb-remote localhost:1234"],
+            "targetCreateCommands": [
+                "target create ${workspaceFolder}/build/HryOS"
+            ],
+            "processCreateCommands": [
+                "gdb-remote localhost:1234"
+            ],
         }
     ]
 }
