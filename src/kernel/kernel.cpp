@@ -6,6 +6,7 @@
 extern "C" void kernel_main()
 {
     terminal::init();
+    terminal::clear_screen();
 
     terminal::print("Hry");
     terminal::set_foreground_color(terminal::color::cyan);
