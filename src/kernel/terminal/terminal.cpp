@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "utils/string.hpp"
+#include "utils/memory.hpp"
 
 #include "entry.hpp"
 
@@ -35,6 +35,34 @@ namespace terminal
         return nullptr;
     }
 
+    void scroll_down()
+    {
+        for (size_t y = 0; y < vga_display_size.y - 1; y++)
+        {
+            for (size_t x = 0; x < vga_display_size.x; x++)
+            {
+                *get_entry({ x, y }) = *get_entry({ x, y + 1 });
+            }
+        }
+
+        for (size_t i = 0; i < vga_display_size.x; i++)
+        {
+            get_entry({ i, vga_display_size.y - 1 })->reset();
+        }
+
+        cursor_pos.y--;
+    }
+
+    void next_line()
+    {
+        cursor_pos.y++;
+
+        if (cursor_pos.y == vga_display_size.y)
+        {
+            scroll_down();
+        }
+    }
+
     void put_char_at(char ch, const vec2u& pos)
     {
         auto* entry = get_entry(pos);
@@ -50,10 +78,8 @@ namespace terminal
         if (cursor_pos.x >= vga_display_size.x)
         {
             cursor_pos.x = 0;
-            cursor_pos.y++;
+            next_line();
         }
-
-        cursor_pos.y %= vga_display_size.y;
     }
 
     void clear_screen()
@@ -80,18 +106,28 @@ namespace terminal
     {
         print(msg);
         cursor_pos.x = 0;
-        cursor_pos.y++;
 
-        cursor_pos.y %= vga_display_size.y;
+        next_line();
     }
 
-    void move_cursor(vec2u pos) { cursor_pos = pos; }
+    void move_cursor(vec2u pos)
+    {
+        cursor_pos = pos;
+    }
 
     void set_color(color foreground, color background)
     {
         set_foreground_color(foreground);
         set_background_color(background);
     }
-    void set_foreground_color(color color) { current_color.foreground = color; }
-    void set_background_color(color color) { current_color.background = color; }
+
+    void set_foreground_color(color color)
+    {
+        current_color.foreground = color;
+    }
+
+    void set_background_color(color color)
+    {
+        current_color.background = color;
+    }
 } // namespace terminal

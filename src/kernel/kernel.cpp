@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdint.h>
 
 #include "terminal/color.hpp"
@@ -19,4 +20,14 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
     terminal::print("Hry");
     terminal::set_foreground_color(terminal::color::cyan);
     terminal::print_line("OS!");
+
+    for (size_t y = 1; y < 25; y++)
+    {
+        for (size_t x = 0; x < y; x++)
+        {
+            terminal::print("x");
+        }
+
+        terminal::print_line("");
+    }
 }

@@ -9,13 +9,19 @@ namespace terminal
     class entry
     {
     public:
-        void set_character(char ch) { _character = ch; }
+        void set_character(char ch)
+        {
+            character_ = ch;
+        }
 
-        char get_character() { return _character; }
+        char get_character()
+        {
+            return character_;
+        }
 
         void set_color(terminal::color foreground, terminal::color background)
         {
-            _color = static_cast<uint8_t>(foreground) | static_cast<uint8_t>(background) << 4;
+            color_ = static_cast<uint8_t>(foreground) | static_cast<uint8_t>(background) << 4;
         }
 
         void set_color(terminal::combined_color color)
@@ -25,18 +31,24 @@ namespace terminal
 
         void set_foreground_color(terminal::color fg)
         {
-            _color &= 0b11110000;
-            _color |= (0b00001111 & static_cast<uint8_t>(fg));
+            color_ &= 0b11110000;
+            color_ |= (0b00001111 & static_cast<uint8_t>(fg));
         }
 
         void set_background_color(terminal::color bg)
         {
-            _color &= 0b00001111;
-            _color |= (0b11110000 & static_cast<uint8_t>(bg) << 4);
+            color_ &= 0b00001111;
+            color_ |= (0b11110000 & static_cast<uint8_t>(bg) << 4);
+        }
+
+        void reset()
+        {
+            character_ = 0;
+            color_ = 0;
         }
 
     private:
-        char _character;
-        uint8_t _color;
+        char character_;
+        uint8_t color_;
     };
 } // namespace terminal
