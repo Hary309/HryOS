@@ -6,9 +6,9 @@ struct vec2
     T x;
     T y;
 
-    vec2() = default;
-    vec2(T x, T y) : x(x), y(y) {}
-    explicit vec2(T value) : x(value), y(value) {}
+    constexpr vec2() = default;
+    constexpr vec2(T x, T y) : x(x), y(y) {}
+    constexpr explicit vec2(T value) : x(value), y(value) {}
 };
 
 template<typename T>
