@@ -4,21 +4,22 @@
 
 #include "utils/string.hpp"
 
-#include "cursor.hpp"
+#include "display.hpp"
 #include "entry.hpp"
 
 namespace terminal
 {
-    static constexpr auto DisplayAddress = 0xB8000;
+    static constexpr auto vga_display_address = 0xB8000;
+    static constexpr vec2u vga_display_size = { 80, 25 };
 
     static vec2u cursor_pos;
-    static cursor cursor;
+    static display display;
 
     static combined_color current_color;
 
     void init()
     {
-        cursor = { DisplayAddress, { Width, Height } };
+        display = { vga_display_address, vga_display_size };
         cursor_pos = { 0, 0 };
 
         current_color.background = color::black;
@@ -27,7 +28,7 @@ namespace terminal
 
     void put_char_at(char ch, const vec2u& pos)
     {
-        auto* entry = cursor.get_entry(pos);
+        auto* entry = display.get_entry(pos);
         entry->set_character(ch);
         entry->set_color(current_color);
     }
@@ -37,20 +38,20 @@ namespace terminal
         put_char_at(ch, cursor_pos);
         cursor_pos.x++;
 
-        if (cursor_pos.x >= Width)
+        if (cursor_pos.x >= vga_display_size.x)
         {
             cursor_pos.x = 0;
             cursor_pos.y++;
         }
 
-        cursor_pos.y %= Height;
+        cursor_pos.y %= vga_display_size.y;
     }
 
     void clear_screen()
     {
-        for (uint32_t y = 0; y < Height; y++)
+        for (uint32_t y = 0; y < vga_display_size.y; y++)
         {
-            for (uint32_t x = 0; x < Width; x++)
+            for (uint32_t x = 0; x < vga_display_size.x; x++)
             {
                 put_char_at(' ', { x, y });
             }
@@ -72,7 +73,7 @@ namespace terminal
         cursor_pos.x = 0;
         cursor_pos.y++;
 
-        cursor_pos.y %= Height;
+        cursor_pos.y %= vga_display_size.y;
     }
 
     void move_cursor(vec2u pos) { cursor_pos = pos; }

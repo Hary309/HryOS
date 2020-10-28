@@ -6,9 +6,6 @@
 
 namespace terminal
 {
-    inline static auto Width = 80u;
-    inline static auto Height = 25u;
-
     void init();
 
     void clear_screen();
