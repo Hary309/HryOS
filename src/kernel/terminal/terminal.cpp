@@ -4,7 +4,6 @@
 
 #include "utils/string.hpp"
 
-#include "display.hpp"
 #include "entry.hpp"
 
 namespace terminal
@@ -13,22 +12,32 @@ namespace terminal
     static constexpr vec2u vga_display_size = { 80, 25 };
 
     static vec2u cursor_pos;
-    static display display;
+    entry* display;
 
     static combined_color current_color;
 
     void init()
     {
-        display = { vga_display_address, vga_display_size };
+        display = reinterpret_cast<entry*>(vga_display_address);
         cursor_pos = { 0, 0 };
 
         current_color.background = color::black;
         current_color.foreground = color::white;
     }
 
+    entry* get_entry(const vec2u& pos)
+    {
+        if (pos.x < vga_display_size.x && pos.y < vga_display_size.y)
+        {
+            return display + pos.y * vga_display_size.x + pos.x;
+        }
+
+        return nullptr;
+    }
+
     void put_char_at(char ch, const vec2u& pos)
     {
-        auto* entry = display.get_entry(pos);
+        auto* entry = get_entry(pos);
         entry->set_character(ch);
         entry->set_color(current_color);
     }
