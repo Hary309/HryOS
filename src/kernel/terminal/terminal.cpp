@@ -1,8 +1,8 @@
 #include "terminal.hpp"
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include "utils/memory.hpp"
 
 #include "entry.hpp"
 
