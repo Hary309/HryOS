@@ -20,7 +20,7 @@ file(GLOB_RECURSE kernel-src
 
 add_executable(HryOS ${kernel-src})
 
-target_include_directories(HryOS PRIVATE src/kernel)
+target_include_directories(HryOS PRIVATE src/kernel src/hlib)
 
 file(COPY ${PROJECT_SOURCE_DIR}/config/grub.cfg DESTINATION ${PROJECT_SOURCE_DIR}/iso/boot/grub)
 
