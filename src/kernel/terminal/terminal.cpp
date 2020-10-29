@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <algorithms.hpp>
+#include <algorithm.hpp>
 
 #include "entry.hpp"
 
