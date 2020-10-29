@@ -10,13 +10,13 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Emulator",
+            "label": "Run QEMU Kernel",
             "type": "shell",
             "command": "qemu-system-i386 -kernel build/HryOS",
             "problemMatcher": []
         },
         {
-            "label": "Run Emulator CD-ROM",
+            "label": "Run QEMU CD-ROM",
             "type": "shell",
             "command": "qemu-system-i386 -cdrom HryOS.iso",
             "dependsOn": [
@@ -25,10 +25,19 @@
             "problemMatcher": []
         },
         {
-            "label": "Run Emulator in GDB mode",
+            "label": "Run QEMU in GDB mode",
             "type": "shell",
             "command": "qemu-system-i386 -s -S -kernel build/HryOS",
             "problemMatcher": [],
+        },
+        {
+            "label": "Run Bochs",
+            "type": "shell",
+            "command": "bochs -f config/bochsrc.bxrc",
+            "dependsOn": [
+                "Build ISO"
+            ],
+            "problemMatcher": []
         }
     ]
 }
