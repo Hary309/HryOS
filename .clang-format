@@ -83,10 +83,10 @@ ColumnLimit: 100
 AccessModifierOffset: -4
 IncludeBlocks: Regroup
 IncludeCategories:
-  # Headers in <> without extension
-  - Regex: '<([A-Za-z0-9\/-_])+>'
+  # Headers in <> with h extension
+  - Regex: '<([A-Za-z0-9\/-_])+.h>'
     Priority: 1
-  # Headers in <> with extension
+  # Headers in <> with other extension
   - Regex: '\<.*\>'
     Priority: 2
   # Headers with /
