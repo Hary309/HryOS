@@ -27,7 +27,7 @@
         {
             "label": "Run QEMU in GDB mode",
             "type": "shell",
-            "command": "qemu-system-i386 -s -S -kernel build/HryOS",
+            "command": "qemu-system-i386 -serial stdio -s -S -kernel build/HryOS",
             "problemMatcher": [],
         },
         {
