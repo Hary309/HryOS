@@ -3,6 +3,7 @@
 
 #include <format.hpp>
 
+#include "logger/logger.hpp"
 #include "terminal/color.hpp"
 #include "terminal/terminal.hpp"
 
@@ -15,6 +16,8 @@ void print(char ch)
 
 extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 {
+    logger::init();
+
     terminal::init();
     terminal::clear_screen();
 
@@ -30,5 +33,5 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 
     terminal::set_foreground_color(terminal::color::white);
 
-    hlib::format_to(print, "{} is {x} in {1}s", "Hry", 57005, 32.53f);
+    logger::info("{} is {x} in {1}s", "Hry", 57005, 32.53f);
 }
