@@ -43,6 +43,36 @@ namespace hlib
     };
 
     template<>
+    struct formatter<uint32_t>
+    {
+        void parse(const char* fmt)
+        {
+            switch (*fmt)
+            {
+                case 'x': base = num_base::hex; break;
+                case 'b': base = num_base::bin; break;
+                case 'o': base = num_base::oct; break;
+            }
+        }
+
+        void format(OutputFunction_t output, uint32_t num)
+        {
+            char buffer[12]{};
+            to_chars(buffer, buffer + 11, num, base);
+
+            auto* it = buffer;
+
+            while (*it)
+            {
+                output(*it);
+                it++;
+            }
+        }
+
+        num_base base = num_base::dec;
+    };
+
+    template<>
     struct formatter<float>
     {
         void parse(const char* fmt)
