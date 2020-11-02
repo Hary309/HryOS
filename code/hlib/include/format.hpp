@@ -3,6 +3,7 @@
 #include "charconv.hpp"
 #include "numerics.hpp"
 #include "string.hpp"
+#include "type_traits.hpp"
 #include "utility.hpp"
 
 namespace hlib
@@ -118,7 +119,7 @@ namespace hlib
     };
 
     template<auto N>
-    struct formatter<const char (&)[N]>
+    struct formatter<const char[N]>
     {
         void parse(const char*& /*fmt*/)
         {
@@ -168,7 +169,7 @@ namespace hlib
     {
         print_to_format_sign(output, fmt);
 
-        formatter<Arg> f;
+        formatter<hlib::remove_reference_t<Arg>> f;
         f.parse(++fmt);
         f.format(output, hlib::forward<Arg>(arg));
 
@@ -189,7 +190,7 @@ namespace hlib
     {
         print_to_format_sign(output, fmt);
 
-        formatter<Arg> f;
+        formatter<hlib::remove_reference_t<Arg>> f;
         f.parse(++fmt);
         f.format(output, hlib::forward<Arg>(arg));
 
