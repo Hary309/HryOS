@@ -23,7 +23,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
-        terminal::print_line("Invalid magic number");
+        terminal::print_line("Invalid magic number [0x{x}]", magic);
         return;
     }
 

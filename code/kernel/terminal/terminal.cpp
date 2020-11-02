@@ -51,6 +51,8 @@ namespace terminal
 
     void next_line()
     {
+        cursor_pos.x = 0;
+
         cursor_pos.y++;
 
         if (cursor_pos.y == VGA_DISPLAY_SIZE.y)
@@ -87,23 +89,6 @@ namespace terminal
                 put_char_at(' ', { x, y });
             }
         }
-    }
-
-    void print(const char* msg)
-    {
-        while (*msg)
-        {
-            put_char(*msg);
-            msg++;
-        }
-    }
-
-    void print_line(const char* msg)
-    {
-        print(msg);
-        cursor_pos.x = 0;
-
-        next_line();
     }
 
     void move_cursor(vec2u pos)
