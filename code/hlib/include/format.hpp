@@ -105,17 +105,17 @@ namespace hlib
         }
     };
 
-    bool is_start_formatting(char ch)
+    inline bool is_start_formatting(char ch)
     {
         return ch == '{';
     }
 
-    bool is_end_formatting(char ch)
+    inline bool is_end_formatting(char ch)
     {
         return ch == '}';
     }
 
-    void print_to_format_sign(OutputFunction_t output, const char*& fmt)
+    inline void print_to_format_sign(OutputFunction_t output, const char*& fmt)
     {
         while (!is_start_formatting(*fmt) && *fmt)
         {
@@ -124,7 +124,7 @@ namespace hlib
         }
     }
 
-    void format_to(OutputFunction_t output, const char* fmt)
+    inline void format_to(OutputFunction_t output, const char* fmt)
     {
         while (*fmt)
         {
