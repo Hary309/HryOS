@@ -4,7 +4,7 @@
 
 namespace hlib
 {
-    bool is_digit(char ch)
+    inline bool is_digit(char ch)
     {
         return ch >= '0' && ch <= '9';
     }
