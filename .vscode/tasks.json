@@ -12,7 +12,7 @@
         {
             "label": "Run QEMU Kernel",
             "type": "shell",
-            "command": "qemu-system-i386 -kernel build/HryOS",
+            "command": "qemu-system-i386 -serial stdio -kernel build/HryOS",
             "problemMatcher": []
         },
         {
