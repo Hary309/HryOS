@@ -2,6 +2,7 @@
 
 #include "charconv.hpp"
 #include "numerics.hpp"
+#include "string.hpp"
 #include "utility.hpp"
 
 namespace hlib
@@ -14,8 +15,6 @@ namespace hlib
     template<>
     struct formatter<int>
     {
-        num_base base = num_base::dec;
-
         void parse(const char* fmt)
         {
             switch (*fmt)
@@ -39,12 +38,42 @@ namespace hlib
                 it++;
             }
         }
+
+        num_base base = num_base::dec;
+    };
+
+    template<>
+    struct formatter<float>
+    {
+        void parse(const char* fmt)
+        {
+            if (is_digit(*fmt))
+            {
+                precision = *fmt - '0';
+            }
+        }
+
+        void format(OutputFunction_t output, float num)
+        {
+            char buffer[12]{};
+            to_chars(buffer, buffer + 11, num, precision);
+
+            auto* it = buffer;
+
+            while (*it)
+            {
+                output(*it);
+                it++;
+            }
+        }
+
+        int precision = 3;
     };
 
     template<>
     struct formatter<const char*>
     {
-        void parse(const char* fmt)
+        void parse(const char*& /*fmt*/)
         {
         }
 
@@ -61,7 +90,7 @@ namespace hlib
     template<auto N>
     struct formatter<const char (&)[N]>
     {
-        void parse(const char* fmt)
+        void parse(const char*& /*fmt*/)
         {
         }
 
@@ -86,60 +115,63 @@ namespace hlib
         return ch == '}';
     }
 
-    template<typename T>
-    void execute_formatter_imp(
-        OutputFunction_t output, const char* fmt, int& current_index, int index, T&& t)
+    void print_to_format_sign(OutputFunction_t output, const char*& fmt)
     {
-        if (current_index == index)
+        while (!is_start_formatting(*fmt) && *fmt)
         {
-            formatter<T> f;
-            f.parse(fmt);
-            f.format(output, t);
-            current_index++;
-        }
-        else
-        {
-            current_index++;
+            output(*fmt);
+            fmt++;
         }
     }
 
-    template<typename... Ts>
-    void execute_formatter(
-        OutputFunction_t output, const char* fmt, int current_index, int index, Ts&&... ts)
+    void format_to(OutputFunction_t output, const char* fmt)
     {
-        (execute_formatter_imp(output, fmt, current_index, index, hlib::forward<Ts>(ts)), ...);
+        while (*fmt)
+        {
+            output(*fmt);
+            ++fmt;
+        }
     }
 
-    template<typename... Ts>
-    void format_to(OutputFunction_t output, const char* fmt, Ts&&... ts)
+    template<typename Arg>
+    void format_to(OutputFunction_t output, const char* fmt, Arg&& arg)
     {
-        auto* it = fmt;
+        print_to_format_sign(output, fmt);
 
-        int format_index = 0;
+        formatter<Arg> f;
+        f.parse(++fmt);
+        f.format(output, hlib::forward<Arg>(arg));
 
-        bool formating = false;
-
-        while (*it)
+        // skip inside of {}
+        while (!is_end_formatting(*fmt))
         {
-            char ch = *it;
-
-            if (is_start_formatting(ch))
-            {
-                execute_formatter(output, it + 1, 0, format_index++, hlib::forward<Ts>(ts)...);
-                formating = true;
-            }
-
-            if (!formating)
-            {
-                output(ch);
-            }
-
-            if (is_end_formatting(ch))
-            {
-                formating = false;
-            }
-
-            it++;
+            ++fmt;
         }
+
+        // skip }
+        ++fmt;
+
+        format_to(output, fmt);
+    }
+
+    template<typename Arg, typename... Args>
+    void format_to(OutputFunction_t output, const char* fmt, Arg&& arg, Args&&... args)
+    {
+        print_to_format_sign(output, fmt);
+
+        formatter<Arg> f;
+        f.parse(++fmt);
+        f.format(output, hlib::forward<Arg>(arg));
+
+        // skip inside of {}
+        while (!is_end_formatting(*fmt))
+        {
+            ++fmt;
+        }
+
+        // skip }
+        ++fmt;
+
+        format_to(output, fmt, hlib::forward<Args>(args)...);
     }
 } // namespace hlib

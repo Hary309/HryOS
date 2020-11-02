@@ -90,7 +90,7 @@ namespace hlib
         uint32_t int_part = static_cast<int>(value);
 
         float float_part = value - int_part;
-        bool after_dot = float_part > 0;
+        bool after_dot = float_part > 0 && precision > 0;
 
         uint32_t float_precision = float_part * pow10(precision);
 

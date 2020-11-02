@@ -30,5 +30,5 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 
     terminal::set_foreground_color(terminal::color::white);
 
-    hlib::format_to(print, "{x} is {x}", 48879, 57005);
+    hlib::format_to(print, "{} is {x} in {1}s", "Hry", 57005, 32.53f);
 }
