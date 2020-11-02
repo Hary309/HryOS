@@ -1,12 +1,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <format.hpp>
+
 #include "terminal/color.hpp"
 #include "terminal/terminal.hpp"
 
-#include "charconv.hpp"
 #include "multiboot.h"
-#include "numerics.hpp"
+
+void print(char ch)
+{
+    terminal::put_char(ch);
+}
 
 extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 {
@@ -23,9 +28,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
     terminal::set_foreground_color(terminal::color::cyan);
     terminal::print_line("OS!");
 
-    char buffer[20]{};
+    terminal::set_foreground_color(terminal::color::white);
 
-    hlib::to_chars(buffer, buffer + 19, -1234.5678f, 2);
-
-    terminal::print_line(buffer);
+    hlib::format_to(print, "{x} is {x}", 48879, 57005);
 }
