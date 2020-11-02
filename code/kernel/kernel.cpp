@@ -9,11 +9,6 @@
 
 #include "multiboot.h"
 
-void print(char ch)
-{
-    terminal::put_char(ch);
-}
-
 extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 {
     logger::init();
@@ -30,8 +25,4 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     terminal::print("Hry");
     terminal::set_foreground_color(terminal::color::cyan);
     terminal::print_line("OS!");
-
-    terminal::set_foreground_color(terminal::color::white);
-
-    logger::info("{} is {x} in {1}s", "Hry", 57005, 32.53f);
 }
