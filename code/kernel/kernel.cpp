@@ -4,7 +4,9 @@
 #include "terminal/color.hpp"
 #include "terminal/terminal.hpp"
 
+#include "charconv.hpp"
 #include "multiboot.h"
+#include "numerics.hpp"
 
 extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
 {
@@ -21,13 +23,9 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
     terminal::set_foreground_color(terminal::color::cyan);
     terminal::print_line("OS!");
 
-    for (size_t y = 1; y < 25; y++)
-    {
-        for (size_t x = 0; x < y; x++)
-        {
-            terminal::print("x");
-        }
+    char buffer[20]{};
 
-        terminal::print_line("");
-    }
+    hlib::to_chars(buffer, buffer + 19, -1234.5678f, 2);
+
+    terminal::print_line(buffer);
 }
