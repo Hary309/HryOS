@@ -5,6 +5,8 @@
 
 #include <algorithm.hpp>
 
+#include "logger/logger.hpp"
+
 #include "entry.hpp"
 
 namespace terminal
@@ -24,6 +26,8 @@ namespace terminal
 
         current_color.background = color::black;
         current_color.foreground = color::white;
+
+        logger::info("Terminal initialized");
     }
 
     constexpr entry* get_entry(const vec2u& pos)

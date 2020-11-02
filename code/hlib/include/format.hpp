@@ -127,11 +127,9 @@ namespace hlib
 
         void format(OutputFunction_t output, const char (&txt)[N])
         {
-            auto* it = txt;
-            while (*it)
+            for (size_t i = 0; i < N; i++)
             {
-                output(*it);
-                it++;
+                output(txt[i]);
             }
         }
     };

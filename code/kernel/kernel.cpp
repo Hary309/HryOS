@@ -14,7 +14,7 @@ void print(char ch)
     terminal::put_char(ch);
 }
 
-extern "C" void kernel_main(uint32_t magic, multiboot_info* info)
+extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 {
     logger::init();
 

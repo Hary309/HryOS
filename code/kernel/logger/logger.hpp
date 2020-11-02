@@ -14,7 +14,6 @@ namespace logger
     };
 
     void init();
-
     void write_char(char ch);
 
     inline const char* string_level(level lvl)
