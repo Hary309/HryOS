@@ -44,7 +44,7 @@ namespace hlib
     };
 
     template<>
-    struct formatter<uint32_t>
+    struct formatter<unsigned int>
     {
         void parse(const char* fmt)
         {
@@ -71,6 +71,11 @@ namespace hlib
         }
 
         num_base base = num_base::dec;
+    };
+
+    template<>
+    struct formatter<long unsigned int> : formatter<unsigned int>
+    {
     };
 
     template<>
