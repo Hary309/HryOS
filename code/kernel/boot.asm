@@ -55,7 +55,7 @@ _start:
 	; in assembly as languages such as C cannot function without a stack.
 	mov esp, stack_top
 
-	; Reset EFLAGS.
+	; Reset EFLAGS (push 0 on stack and pop this value to flags register	)
 	push 0
 	popf
 	
@@ -94,6 +94,7 @@ _start:
 	; 3) Jump to the hlt instruction if it ever wakes up due to a
 	;    non-maskable interrupt occurring or due to system management mode.
 	cli
-.hang:	hlt
+.hang:
+	hlt
 	jmp .hang
 .end:

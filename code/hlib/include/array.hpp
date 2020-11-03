@@ -52,7 +52,7 @@ namespace hlib
             return data_;
         }
 
-    private:
+    public:
         T data_[N];
     };
 } // namespace hlib

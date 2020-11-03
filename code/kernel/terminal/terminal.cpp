@@ -45,7 +45,7 @@ namespace terminal
         hlib::copy_n(
             display + VGA_DISPLAY_SIZE.x, VGA_DISPLAY_SIZE.x * (VGA_DISPLAY_SIZE.y - 1), display);
 
-        for (size_t i = 0; i < VGA_DISPLAY_SIZE.x; i++)
+        for (uint32_t i = 0; i < VGA_DISPLAY_SIZE.x; i++)
         {
             get_entry({ i, VGA_DISPLAY_SIZE.y - 1 })->reset();
         }

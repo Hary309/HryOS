@@ -28,8 +28,8 @@ namespace hlib
 
         void format(OutputFunction_t output, int num)
         {
-            char buffer[12]{};
-            to_chars(buffer, buffer + 11, num, base);
+            char buffer[33]{};
+            to_chars(buffer, buffer + 32, num, base);
 
             auto* it = buffer;
 
@@ -58,8 +58,8 @@ namespace hlib
 
         void format(OutputFunction_t output, uint32_t num)
         {
-            char buffer[12]{};
-            to_chars(buffer, buffer + 11, num, base);
+            char buffer[33]{};
+            to_chars(buffer, buffer + 32, num, base);
 
             auto* it = buffer;
 
