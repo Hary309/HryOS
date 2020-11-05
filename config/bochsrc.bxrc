@@ -2,6 +2,8 @@ mouse: enabled=0
 megs: 32
 magic_break: enabled=1
 
+com1: enabled=1, mode=file, dev=logs.log
+
 ata0-master: type=cdrom, path=HryOS.iso, status=inserted
 boot: cdrom
 romimage: file=/usr/share/bochs/BIOS-bochs-latest

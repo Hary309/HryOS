@@ -2,3 +2,4 @@ build
 iso
 HryOS.iso
 .cache
+logs.log
