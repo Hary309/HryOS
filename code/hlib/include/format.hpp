@@ -139,7 +139,7 @@ namespace hlib
         void print_value(OutputFunction_t output, uint32_t value)
         {
             char buffer[33]{};
-            to_chars(buffer, buffer + 32, static_cast<uint32_t>(value), base);
+            auto digit_count = to_chars(buffer, buffer + 32, static_cast<uint32_t>(value), base);
 
             auto* it = buffer;
 
@@ -147,10 +147,8 @@ namespace hlib
             {
                 const int MAX_LENGTH = 8;
 
-                auto len = cstring_length(buffer);
-
                 // fill with zeros
-                for (size_t i = 0; i < MAX_LENGTH - len; i++)
+                for (size_t i = 0; i < MAX_LENGTH - digit_count; i++)
                 {
                     output('0');
                 }
@@ -198,7 +196,7 @@ namespace hlib
     template<>
     struct formatter<const char*>
     {
-        void parse(const char*& /*fmt*/)
+        void parse(const char* /*fmt*/)
         {
         }
 
@@ -215,7 +213,7 @@ namespace hlib
     template<auto N>
     struct formatter<const char[N]>
     {
-        void parse(const char*& /*fmt*/)
+        void parse(const char* /*fmt*/)
         {
         }
 
