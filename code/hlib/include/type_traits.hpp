@@ -476,6 +476,9 @@ namespace hlib
     };
 
     template<typename T>
+    inline constexpr bool is_integral_v = is_integral<T>::value;
+
+    template<typename T>
     struct identity_of
     {
         using type = T;
@@ -534,4 +537,31 @@ namespace hlib
     template<size_t I, typename... Tail>
     using nth_type_t = typename nth_type_impl<0, I, Tail...>::type;
 
+    template<class T>
+    struct is_floating_point : integral_constant<
+                                   bool,
+                                   is_same<float, typename remove_cv<T>::type>::value ||
+                                       is_same<double, typename remove_cv<T>::type>::value ||
+                                       is_same<long double, typename remove_cv<T>::type>::value>
+    {
+    };
+
+    template<class T>
+    struct is_arithmetic
+        : integral_constant<bool, is_integral<T>::value || is_floating_point<T>::value>
+    {
+    };
+
+    template<typename T, bool = is_arithmetic<T>::value>
+    struct is_unsigned : integral_constant<bool, T(0) < T(-1)>
+    {
+    };
+
+    template<typename T>
+    struct is_unsigned<T, false> : false_type
+    {
+    };
+
+    template<class T>
+    inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
 } // namespace hlib

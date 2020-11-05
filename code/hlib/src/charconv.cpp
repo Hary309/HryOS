@@ -3,32 +3,37 @@
 #include "math.hpp"
 #include "memory.hpp"
 #include "numerics.hpp"
+#include "type_traits.hpp"
 
 namespace hlib
 {
     static const auto DIGITS = "0123456789ABCDEF";
 
-    void to_chars(char* first, char* last, int value, num_base base)
+    template<typename T, typename = enable_if_t<is_integral_v<T>>>
+    size_t to_chars_integral_impl(char* first, char* last, T value, num_base base)
     {
         if (first >= last)
         {
-            return;
+            return 0;
         }
 
         size_t digits_count = 0;
 
-        if (value < 0)
+        if constexpr (!is_unsigned_v<T>)
         {
-            *first = '-';
-            value = -value;
-            digits_count++;
+            if (value < 0)
+            {
+                *first = '-';
+                value = -value;
+                digits_count++;
+            }
         }
 
         digits_count += hlib::digits_count(value, base);
 
         if (distance(first, last) < digits_count)
         {
-            return;
+            return 0;
         }
 
         auto num_base = get_base(base);
@@ -43,34 +48,38 @@ namespace hlib
             *it = DIGITS[digit];
             it--;
         }
+
+        return digits_count;
     }
 
-    void to_chars(char* first, char* last, uint32_t value, num_base base)
+    size_t to_chars(char* first, char* last, int8_t value, num_base base)
     {
-        if (first >= last)
-        {
-            return;
-        }
+        return to_chars_integral_impl(first, last, value, base);
+    }
 
-        size_t digits_count = hlib::digits_count(value, base);
+    size_t to_chars(char* first, char* last, uint8_t value, num_base base)
+    {
+        return to_chars_integral_impl(first, last, value, base);
+    }
 
-        if (distance(first, last) < digits_count)
-        {
-            return;
-        }
+    size_t to_chars(char* first, char* last, int16_t value, num_base base)
+    {
+        return to_chars_integral_impl(first, last, value, base);
+    }
 
-        auto num_base = get_base(base);
+    size_t to_chars(char* first, char* last, uint16_t value, num_base base)
+    {
+        return to_chars_integral_impl(first, last, value, base);
+    }
 
-        auto* it = first + digits_count - 1;
+    size_t to_chars(char* first, char* last, int32_t value, num_base base)
+    {
+        return to_chars_integral_impl(first, last, value, base);
+    }
 
-        while (value)
-        {
-            auto digit = value % num_base;
-            value /= num_base;
-
-            *it = DIGITS[digit];
-            it--;
-        }
+    size_t to_chars(char* first, char* last, uint32_t value, num_base base)
+    {
+        return to_chars_integral_impl(first, last, value, base);
     }
 
     void to_chars(char* first, char* last, float value, int precision)

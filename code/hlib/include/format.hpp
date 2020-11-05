@@ -1,6 +1,7 @@
 #pragma once
 
 #include "charconv.hpp"
+#include "cstring.hpp"
 #include "numerics.hpp"
 #include "string.hpp"
 #include "type_traits.hpp"
@@ -13,8 +14,8 @@ namespace hlib
     template<typename>
     struct formatter;
 
-    template<>
-    struct formatter<int>
+    template<typename T>
+    struct formatter_integral
     {
         void parse(const char* fmt)
         {
@@ -29,7 +30,7 @@ namespace hlib
         void format(OutputFunction_t output, int num)
         {
             char buffer[33]{};
-            to_chars(buffer, buffer + 32, num, base);
+            to_chars(buffer, buffer + 32, static_cast<int32_t>(num), base);
 
             auto* it = buffer;
 
@@ -44,7 +45,76 @@ namespace hlib
     };
 
     template<>
-    struct formatter<unsigned int>
+    struct formatter<char> : formatter_integral<int8_t>
+    {
+    };
+
+    template<>
+    struct formatter<unsigned char> : formatter_integral<uint8_t>
+    {
+    };
+
+    template<>
+    struct formatter<short> : formatter_integral<int16_t>
+    {
+    };
+
+    template<>
+    struct formatter<unsigned short> : formatter_integral<uint16_t>
+    {
+    };
+
+    template<>
+    struct formatter<int> : formatter_integral<int32_t>
+    {
+    };
+
+    template<>
+    struct formatter<unsigned int> : formatter_integral<uint32_t>
+    {
+    };
+
+    template<>
+    struct formatter<long unsigned int> : formatter_integral<uint32_t>
+    {
+    };
+
+    template<>
+    struct formatter<bool>
+    {
+        void parse(const char* fmt)
+        {
+            as_string = *fmt == 's';
+        }
+
+        void format(OutputFunction_t output, bool num)
+        {
+            if (as_string)
+            {
+                const char* txt = "false";
+
+                if (num)
+                {
+                    txt = "true";
+                }
+
+                while (*txt)
+                {
+                    output(*txt);
+                    txt++;
+                }
+            }
+            else
+            {
+                output('0' + static_cast<int>(num));
+            }
+        }
+
+        bool as_string = false;
+    };
+
+    template<>
+    struct formatter<uint64_t>
     {
         void parse(const char* fmt)
         {
@@ -54,14 +124,37 @@ namespace hlib
                 case 'b': base = num_base::bin; break;
                 case 'o': base = num_base::oct; break;
             }
+
+            fmt++;
+
+            leading_zero = *fmt == '0';
         }
 
-        void format(OutputFunction_t output, uint32_t num)
+        void format(OutputFunction_t output, uint64_t num)
+        {
+            print_value(output, static_cast<uint32_t>(num >> 32));
+            print_value(output, static_cast<uint32_t>(num));
+        }
+
+        void print_value(OutputFunction_t output, uint32_t value)
         {
             char buffer[33]{};
-            to_chars(buffer, buffer + 32, num, base);
+            to_chars(buffer, buffer + 32, static_cast<uint32_t>(value), base);
 
             auto* it = buffer;
+
+            if (leading_zero && base == num_base::hex)
+            {
+                const int MAX_LENGTH = 8;
+
+                auto len = cstring_length(buffer);
+
+                // fill with zeros
+                for (size_t i = 0; i < MAX_LENGTH - len; i++)
+                {
+                    output('0');
+                }
+            }
 
             while (*it)
             {
@@ -71,11 +164,7 @@ namespace hlib
         }
 
         num_base base = num_base::dec;
-    };
-
-    template<>
-    struct formatter<long unsigned int> : formatter<unsigned int>
-    {
+        bool leading_zero = false;
     };
 
     template<>

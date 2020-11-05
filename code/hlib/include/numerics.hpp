@@ -25,8 +25,8 @@ namespace hlib
         return 10;
     }
 
-    template<typename N>
-    size_t digits_count(N number, num_base base = num_base::dec)
+    template<typename T>
+    size_t digits_count(T number, num_base base = num_base::dec)
     {
         size_t num_base = 10;
 
@@ -35,7 +35,7 @@ namespace hlib
             num_base = get_base(base);
         }
 
-        if (number < static_cast<N>(num_base))
+        if (number < static_cast<T>(num_base))
         {
             return 1;
         }
