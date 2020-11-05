@@ -4,6 +4,7 @@
 #include <format.hpp>
 
 #include "logger/logger.hpp"
+#include "memory/gdt.hpp"
 #include "terminal/color.hpp"
 #include "terminal/terminal.hpp"
 
@@ -12,6 +13,8 @@
 extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 {
     logger::init();
+
+    gdt::init();
 
     terminal::init();
     terminal::clear_screen();

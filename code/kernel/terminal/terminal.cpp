@@ -79,7 +79,6 @@ namespace terminal
 
         if (cursor_pos.x >= VGA_DISPLAY_SIZE.x)
         {
-            cursor_pos.x = 0;
             next_line();
         }
     }
