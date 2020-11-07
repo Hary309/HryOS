@@ -43,7 +43,7 @@ struct gdt_ptr
 } __attribute__((packed));
 
 static_assert(sizeof(gdt_descriptor) == 8, "Wrong descriptor size");
-static_assert(sizeof(gdt_ptr) == 6, "Wrong gdtp size");
+static_assert(sizeof(gdt_ptr) == 6, "Wrong gdt_ptr size");
 
 // src: gdt.asm
 extern "C" void load_gdt(gdt_ptr* gdtp);
