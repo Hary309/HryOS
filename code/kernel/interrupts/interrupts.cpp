@@ -41,7 +41,7 @@ static constexpr auto PIC2_DATA = PIC2 + 1;
 enum ICW1
 {
     SEND_ICW4 = 1 << 0,
-    INIT = 1 << 5
+    INIT = 1 << 4
 };
 
 enum ICW4
