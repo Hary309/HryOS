@@ -30,6 +30,27 @@ struct idt_ptr
 static_assert(sizeof(idt_entry) == 8, "Wrong idt_entry size");
 static_assert(sizeof(idt_ptr) == 6, "Wrong idt_ptr size");
 
+// programming PIC
+static constexpr auto PIC1 = 0x20;
+static constexpr auto PIC2 = 0XA0;
+static constexpr auto PIC1_COMMAND = PIC1;
+static constexpr auto PIC1_DATA = PIC1 + 1;
+static constexpr auto PIC2_COMMAND = PIC2;
+static constexpr auto PIC2_DATA = PIC2 + 1;
+
+enum ICW1
+{
+    SEND_ICW4 = 1 << 0,
+    INIT = 1 << 5
+};
+
+enum ICW4
+{
+    MODE_8086 = 1 << 0,
+    AUTO_EOI = 1 << 1,
+};
+
+// external functions
 extern "C" int load_idt(idt_ptr* idtp);
 extern "C" void enable_interrupts();
 
@@ -69,24 +90,23 @@ idt_entry set_idt_entry(IRQ_t irq, uint16_t selector, uint8_t type)
 
 void remap_pic()
 {
-    //Restart the both PICs
-    out_byte(0x20, 0x11);
-    out_byte(0xA0, 0x11);
+    // ICW1
+    // Restart the both PICs
+    out_byte(PIC1_COMMAND, ICW1::INIT | ICW1::SEND_ICW4);
+    out_byte(PIC2_COMMAND, ICW1::INIT | ICW1::SEND_ICW4);
 
-    out_byte(0x21, 32); //Make PIC1 start at 32
-    out_byte(0xA1, 40); //Make PIC2 start at 40
+    // ICW2
+    out_byte(PIC1_DATA, 32); //Make PIC1 start at 32 (of IDT table)
+    out_byte(PIC2_DATA, 40); //Make PIC2 start at 40 (of IDT table)
 
-    //Setup cascading for both PICs
-    out_byte(0x21, 0x04);
-    out_byte(0xA1, 0x02);
+    // ICW3
+    out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
+    out_byte(PIC2_DATA, 2);          // set selected IRQ port for master (2 from the right side)
 
-    //8086 mode for both PICs
-    out_byte(0x21, 0x01);
-    out_byte(0xA1, 0x01);
-
-    //Activate all IRQs in both PICs
-    out_byte(0x21, 0x0);
-    out_byte(0xA1, 0x0);
+    // ICW4
+    // Set the default 8086 mode for PICs
+    out_byte(PIC1_DATA, ICW4::MODE_8086);
+    out_byte(PIC2_DATA, ICW4::MODE_8086);
 }
 
 void setup_idt()
