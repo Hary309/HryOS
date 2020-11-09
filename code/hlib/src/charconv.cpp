@@ -40,6 +40,11 @@ namespace hlib
 
         auto* it = first + digits_count - 1;
 
+        if (value == 0)
+        {
+            *it = '0';
+        }
+
         while (value)
         {
             auto digit = value % num_base;
