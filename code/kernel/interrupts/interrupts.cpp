@@ -12,12 +12,28 @@
 
 using IRQ_t = int();
 
+struct sys_regs
+{
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t esp;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+    uint32_t irq_id;
+};
+
 struct idt_entry
 {
-    uint16_t offset_lowerbits;
-    uint16_t selector;
-    uint8_t zero;
-    uint8_t flags;
+    uint16_t offset_lowerbits : 16;
+    uint16_t selector : 16;
+    uint8_t zero : 8;
+    uint8_t type : 4;
+    uint8_t storage : 1;
+    uint8_t dpl : 2;
+    uint8_t present : 1;
     uint16_t offset_higherbits;
 } __attribute__((packed));
 
@@ -82,7 +98,10 @@ idt_entry set_idt_entry(IRQ_t irq, uint16_t selector, uint8_t type)
     entry.offset_lowerbits = address & 0xFFFF;
     entry.selector = selector;
     entry.zero = 0;
-    entry.flags = type;
+    entry.type = 0xE;
+    entry.storage = 0;
+    entry.dpl = 0;
+    entry.present = 1; // always 1
     entry.offset_higherbits = address >> 16;
 
     return entry;
@@ -112,7 +131,6 @@ void remap_pic()
 void setup_idt()
 {
     IDTP.size = (IDT.size() * sizeof(idt_entry));
-
     IDTP.idt = IDT.data();
 
     load_idt(&IDTP);
@@ -136,6 +154,26 @@ void setup_irq()
     IDT[45] = set_idt_entry(irq13, gdt::KERNEL_CODE_SELECTOR, 0x8e);
     IDT[46] = set_idt_entry(irq14, gdt::KERNEL_CODE_SELECTOR, 0x8e);
     IDT[47] = set_idt_entry(irq15, gdt::KERNEL_CODE_SELECTOR, 0x8e);
+}
+
+// use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
+extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
+{
+    if (regs->irq_id >= 8)
+    {
+        out_byte(0xA0, 0x20);
+    }
+    out_byte(0x20, 0x20);
+
+    if (regs->irq_id == 1)
+    {
+        auto key = static_cast<uint8_t>(in_byte(0x60));
+        logger::info("Key {}", key);
+    }
+    else
+    {
+        // logger::info("id {}", regs.id);
+    }
 }
 
 void interrupts::init()
