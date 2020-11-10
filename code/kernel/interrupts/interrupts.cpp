@@ -2,11 +2,13 @@
 
 #include <stdint.h>
 
+#include <algorithm.hpp>
 #include <array.hpp>
 
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 
+#include "exceptions.hpp"
 #include "irq.hpp"
 #include "port_utils.hpp"
 
@@ -55,6 +57,29 @@ struct idt_ptr
 static_assert(sizeof(idt_entry) == 8, "Wrong idt_entry size");
 static_assert(sizeof(idt_ptr) == 6, "Wrong idt_ptr size");
 
+// error messages
+static hlib::array<const char*, 21> ERROR_MESSAGES{ "Divide Error",
+                                                    "Debug Exception",
+                                                    "NMI Interrupt",
+                                                    "Breakpoint",
+                                                    "Overflow",
+                                                    "BOUND Range Exceeded",
+                                                    "Invalid Opcode (Undefined Opcode)",
+                                                    "Device Not Available (No Math Coprocessor)",
+                                                    "Double Fault",
+                                                    "Coprocessor Segment Overrun",
+                                                    "Invalid TSS",
+                                                    "Segment Not Present",
+                                                    "Stack-Segment Fault",
+                                                    "General Protection",
+                                                    "Page Fault",
+                                                    "Intel Reserved",
+                                                    "x87 FPU Floating-Point Error (Math Fault)",
+                                                    "Alignment Check",
+                                                    "Machine Check",
+                                                    "SIMD Floating-Point Exception",
+                                                    "Virtualization Exception" };
+
 // programming PIC
 static constexpr auto PIC1 = 0x20;
 static constexpr auto PIC1_COMMAND = PIC1;
@@ -101,6 +126,27 @@ void set_idt_entry(size_t offset, IRQ_t irq, uint16_t selector, gate_type type, 
 
 void setup_exceptions()
 {
+    set_idt_entry(0, exception0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(1, exception1, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(2, exception2, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(3, exception3, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(4, exception4, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(5, exception5, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(6, exception6, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(7, exception7, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(8, exception8, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(9, exception9, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(10, exception10, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(11, exception11, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(12, exception12, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(13, exception13, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(14, exception14, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    // set_idt_entry(15, exception15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0); // intel reserved
+    set_idt_entry(16, exception16, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(17, exception17, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(18, exception18, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(19, exception19, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(20, exception20, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
 void remap_pic()
@@ -153,6 +199,12 @@ void setup_pic_interrupts()
     set_idt_entry(PIC2_OFFSET + 7, irq15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
+extern "C" __attribute__((fastcall)) void exception_handler(sys_regs* regs)
+{
+    logger::error("Exception");
+    logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
+}
+
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
 extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
 {
@@ -167,6 +219,8 @@ extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
 void interrupts::init()
 {
     hlib::fill(IDT.begin(), IDT.end(), idt_entry{});
+
+    setup_exceptions();
 
     remap_pic();
     setup_pic_interrupts();
