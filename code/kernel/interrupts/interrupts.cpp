@@ -9,7 +9,7 @@
 #include "memory/gdt.hpp"
 
 #include "exceptions.hpp"
-#include "irq.hpp"
+#include "isr.hpp"
 #include "port_utils.hpp"
 
 using IRQ_t = int();
@@ -180,23 +180,23 @@ void setup_idtp()
 
 void setup_pic_interrupts()
 {
-    set_idt_entry(PIC1_OFFSET + 0, irq0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 1, irq1, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 2, irq2, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 3, irq3, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 4, irq4, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 5, irq5, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 6, irq6, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC1_OFFSET + 7, irq7, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 0, isr0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 1, isr1, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 2, isr2, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 3, isr3, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 4, isr4, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 5, isr5, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 6, isr6, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 7, isr7, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 
-    set_idt_entry(PIC2_OFFSET + 0, irq8, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 1, irq9, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 2, irq10, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 3, irq11, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 4, irq12, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 5, irq13, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 6, irq14, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-    set_idt_entry(PIC2_OFFSET + 7, irq15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 0, isr8, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 1, isr9, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 2, isr10, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 3, isr11, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 4, isr12, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 5, isr13, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 6, isr14, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 7, isr15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
 extern "C" __attribute__((fastcall)) void exception_handler(sys_regs* regs)
@@ -206,7 +206,7 @@ extern "C" __attribute__((fastcall)) void exception_handler(sys_regs* regs)
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
-extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
+extern "C" __attribute__((fastcall)) void pic_handler(sys_regs* regs)
 {
     if (regs->irq_id >= 8)
     {
@@ -218,8 +218,6 @@ extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
 
 void interrupts::init()
 {
-    hlib::fill(IDT.begin(), IDT.end(), idt_entry{});
-
     setup_exceptions();
 
     remap_pic();
