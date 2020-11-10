@@ -18,7 +18,7 @@
         {
             "label": "Run QEMU CD-ROM",
             "type": "shell",
-            "command": "qemu-system-i386 -cdrom HryOS.iso",
+            "command": "qemu-system-i386 -serial stdio -cdrom HryOS.iso",
             "dependsOn": [
                 "Build ISO"
             ],
