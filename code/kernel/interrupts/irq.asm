@@ -1,86 +1,29 @@
-global irq0
-irq0:
-    push 0
+%macro create_irq 1
+global irq%1
+irq%1:
+    push %1
     jmp irq_common
-    
-global irq1
-irq1:
-    push 1
-    jmp irq_common
-    
-global irq2
-irq2:
-    push 2
-    jmp irq_common
- 
-global irq3
-irq3:
-    push 3
-    jmp irq_common
-    
-global irq4
-irq4:
-    push 4
-    jmp irq_common
-    
-global irq5
-irq5:
-    push 5
-    jmp irq_common
- 
-global irq6
-irq6:
-    push 6
-    jmp irq_common
- 
-global irq7
-irq7:
-    push 7
-    jmp irq_common
- 
-global irq8
-irq8:
-    push 8
-    jmp irq_common
- 
-global irq9
-irq9:
-    push 9
-    jmp irq_common
- 
-global irq10
-irq10:
-    push 10
-    jmp irq_common
- 
-global irq11
-irq11:
-    push 11
-    jmp irq_common
- 
-global irq12
-irq12:
-    push 12
-    jmp irq_common
- 
-global irq13
-irq13:
-    push 13
-    jmp irq_common
-    
-global irq14
-irq14:
-    push 14
-    jmp irq_common
+%endmacro
 
-global irq15
-irq15:
-    push 15
-    jmp irq_common
+create_irq 0
+create_irq 1
+create_irq 2
+create_irq 3
+create_irq 4
+create_irq 5
+create_irq 6
+create_irq 7
+create_irq 8
+create_irq 9
+create_irq 10
+create_irq 11
+create_irq 12
+create_irq 13
+create_irq 14
+create_irq 15
 
 extern irq_handler
 
-global irq_common
 irq_common:
     pushad
     mov ecx, esp ; ecx - first argument in fastcall 

@@ -7,7 +7,7 @@
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 
-#include "algorithm.hpp"
+#include "irq.hpp"
 #include "port_utils.hpp"
 
 using IRQ_t = int();
@@ -81,23 +81,7 @@ enum ICW4
 extern "C" int load_idt(idt_ptr* idtp);
 extern "C" void enable_interrupts();
 
-extern "C" int irq0();
-extern "C" int irq1();
-extern "C" int irq2();
-extern "C" int irq3();
-extern "C" int irq4();
-extern "C" int irq5();
-extern "C" int irq6();
-extern "C" int irq7();
-extern "C" int irq8();
-extern "C" int irq9();
-extern "C" int irq10();
-extern "C" int irq11();
-extern "C" int irq12();
-extern "C" int irq13();
-extern "C" int irq14();
-extern "C" int irq15();
-
+// variables
 static hlib::array<idt_entry, 256> IDT{};
 static idt_ptr IDTP;
 
@@ -140,7 +124,7 @@ void remap_pic()
     out_byte(PIC2_DATA, ICW4::mode_8086);
 }
 
-void setup_idt()
+void setup_idtp()
 {
     IDTP.size = (IDT.size() * sizeof(idt_entry));
     IDTP.idt = IDT.data();
@@ -187,7 +171,7 @@ void interrupts::init()
     remap_pic();
     setup_pic_interrupts();
 
-    setup_idt();
+    setup_idtp();
 
     enable_interrupts();
 
