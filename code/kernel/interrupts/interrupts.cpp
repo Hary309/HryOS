@@ -25,16 +25,25 @@ struct sys_regs
     uint32_t irq_id;
 };
 
+enum class gate_type
+{
+    task = 0b00101,
+    interrupt_16 = 0b00110,
+    interrupt_32 = 0b01110,
+    trap_16 = 0b00111,
+    trap_32 = 0b01111
+};
+
+// desc: https://wiki.osdev.org/Interrupt_Descriptor_Table
 struct idt_entry
 {
     uint16_t offset_lowerbits : 16;
-    uint16_t selector : 16;
+    uint16_t selector : 16; // destination code segment
     uint8_t zero : 8;
-    uint8_t type : 4;
-    uint8_t storage : 1;
-    uint8_t dpl : 2;
+    gate_type type : 5;
+    uint8_t dpl : 2; // Descriptor Privilege Level (required privilege)
     uint8_t present : 1;
-    uint16_t offset_higherbits;
+    uint16_t offset_higherbits : 16;
 } __attribute__((packed));
 
 struct idt_ptr
@@ -48,22 +57,24 @@ static_assert(sizeof(idt_ptr) == 6, "Wrong idt_ptr size");
 
 // programming PIC
 static constexpr auto PIC1 = 0x20;
-static constexpr auto PIC2 = 0XA0;
 static constexpr auto PIC1_COMMAND = PIC1;
 static constexpr auto PIC1_DATA = PIC1 + 1;
+static constexpr auto PIC1_OFFSET = 32;
+static constexpr auto PIC2 = 0xA0;
 static constexpr auto PIC2_COMMAND = PIC2;
 static constexpr auto PIC2_DATA = PIC2 + 1;
+static constexpr auto PIC2_OFFSET = 40;
 
 enum ICW1
 {
-    SEND_ICW4 = 1 << 0,
-    INIT = 1 << 4
+    send_ICW4 = 1 << 0,
+    init = 1 << 4
 };
 
 enum ICW4
 {
-    MODE_8086 = 1 << 0,
-    AUTO_EOI = 1 << 1,
+    mode_8086 = 1 << 0,
+    auto_eoi = 1 << 1,
 };
 
 // external functions
@@ -90,33 +101,34 @@ extern "C" int irq15();
 static hlib::array<idt_entry, 256> IDT{};
 static idt_ptr IDTP;
 
-idt_entry set_idt_entry(IRQ_t irq, uint16_t selector, uint8_t type)
+void set_idt_entry(size_t offset, IRQ_t irq, uint16_t selector, gate_type type, uint8_t dpl)
 {
     uint32_t address = reinterpret_cast<uint32_t>(irq);
 
-    idt_entry entry;
+    idt_entry& entry = IDT[offset];
     entry.offset_lowerbits = address & 0xFFFF;
     entry.selector = selector;
     entry.zero = 0;
-    entry.type = 0xE;
-    entry.storage = 0;
-    entry.dpl = 0;
+    entry.type = type;
+    entry.dpl = dpl;
     entry.present = 1; // always 1
     entry.offset_higherbits = address >> 16;
+}
 
-    return entry;
+void setup_exceptions()
+{
 }
 
 void remap_pic()
 {
     // ICW1
     // Restart the both PICs
-    out_byte(PIC1_COMMAND, ICW1::INIT | ICW1::SEND_ICW4);
-    out_byte(PIC2_COMMAND, ICW1::INIT | ICW1::SEND_ICW4);
+    out_byte(PIC1_COMMAND, ICW1::init | ICW1::send_ICW4);
+    out_byte(PIC2_COMMAND, ICW1::init | ICW1::send_ICW4);
 
     // ICW2
-    out_byte(PIC1_DATA, 32); //Make PIC1 start at 32 (of IDT table)
-    out_byte(PIC2_DATA, 40); //Make PIC2 start at 40 (of IDT table)
+    out_byte(PIC1_DATA, PIC1_OFFSET); //Make PIC1 start at 32 (of IDT table)
+    out_byte(PIC2_DATA, PIC2_OFFSET); //Make PIC2 start at 40 (of IDT table)
 
     // ICW3
     out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
@@ -124,8 +136,8 @@ void remap_pic()
 
     // ICW4
     // Set the default 8086 mode for PICs
-    out_byte(PIC1_DATA, ICW4::MODE_8086);
-    out_byte(PIC2_DATA, ICW4::MODE_8086);
+    out_byte(PIC1_DATA, ICW4::mode_8086);
+    out_byte(PIC2_DATA, ICW4::mode_8086);
 }
 
 void setup_idt()
@@ -136,24 +148,25 @@ void setup_idt()
     load_idt(&IDTP);
 }
 
-void setup_irq()
+void setup_pic_interrupts()
 {
-    IDT[32] = set_idt_entry(irq0, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[33] = set_idt_entry(irq1, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[34] = set_idt_entry(irq2, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[35] = set_idt_entry(irq3, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[36] = set_idt_entry(irq4, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[37] = set_idt_entry(irq5, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[38] = set_idt_entry(irq6, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[39] = set_idt_entry(irq7, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[40] = set_idt_entry(irq8, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[41] = set_idt_entry(irq9, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[42] = set_idt_entry(irq10, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[43] = set_idt_entry(irq11, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[44] = set_idt_entry(irq12, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[45] = set_idt_entry(irq13, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[46] = set_idt_entry(irq14, gdt::KERNEL_CODE_SELECTOR, 0x8e);
-    IDT[47] = set_idt_entry(irq15, gdt::KERNEL_CODE_SELECTOR, 0x8e);
+    set_idt_entry(PIC1_OFFSET + 0, irq0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 1, irq1, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 2, irq2, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 3, irq3, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 4, irq4, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 5, irq5, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 6, irq6, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC1_OFFSET + 7, irq7, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+
+    set_idt_entry(PIC2_OFFSET + 0, irq8, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 1, irq9, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 2, irq10, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 3, irq11, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 4, irq12, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 5, irq13, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 6, irq14, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+    set_idt_entry(PIC2_OFFSET + 7, irq15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
@@ -163,17 +176,8 @@ extern "C" __attribute__((fastcall)) void irq_handler(sys_regs* regs)
     {
         out_byte(0xA0, 0x20);
     }
-    out_byte(0x20, 0x20);
 
-    if (regs->irq_id == 1)
-    {
-        auto key = static_cast<uint8_t>(in_byte(0x60));
-        logger::info("Key {}", key);
-    }
-    else
-    {
-        // logger::info("id {}", regs.id);
-    }
+    out_byte(0x20, 0x20);
 }
 
 void interrupts::init()
@@ -181,7 +185,7 @@ void interrupts::init()
     hlib::fill(IDT.begin(), IDT.end(), idt_entry{});
 
     remap_pic();
-    setup_irq();
+    setup_pic_interrupts();
 
     setup_idt();
 
