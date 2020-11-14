@@ -97,7 +97,7 @@ extern "C" void enable_interrupts();
 static hlib::array<idt_entry, 256> IDT{};
 static idt_ptr IDTP;
 
-static interrupts::Callback_t* isr_callbacks[16]{};
+static interrupts::callback_t* isr_callbacks[16]{};
 
 void set_idt_entry(size_t offset, IRQ_t irq, uint16_t selector, gate_type type, uint8_t dpl)
 {
@@ -226,7 +226,7 @@ void interrupts::init()
     logger::info("Interrupts initialized");
 }
 
-void interrupts::register_isr_callback(int irq_id, interrupts::Callback_t callback)
+void interrupts::register_isr_callback(int irq_id, interrupts::callback_t callback)
 {
     if (irq_id < 16)
     {

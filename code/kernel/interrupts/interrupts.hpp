@@ -17,9 +17,9 @@ namespace interrupts
         uint32_t irq_id;
     };
 
-    using Callback_t = void(sys_regs*);
+    using callback_t = void(sys_regs*);
 
     void init();
 
-    void register_isr_callback(int irq_id, Callback_t callback);
+    void register_isr_callback(int irq_id, callback_t callback);
 } // namespace interrupts

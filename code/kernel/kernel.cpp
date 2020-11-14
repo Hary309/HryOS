@@ -3,6 +3,7 @@
 
 #include <format.hpp>
 
+#include "drivers/keyboard.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
@@ -18,6 +19,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     gdt::init();
 
     interrupts::init();
+
+    keyboard::init();
 
     terminal::init();
     terminal::clear_screen();
