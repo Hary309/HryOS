@@ -8,6 +8,7 @@
 #include "logger/logger.hpp"
 
 #include "entry.hpp"
+#include "port_utils.hpp"
 
 namespace terminal
 {
@@ -28,6 +29,16 @@ namespace terminal
         current_color.foreground = color::white;
 
         logger::info("Terminal initialized");
+    }
+
+    void update_vga_cursor_pos(const vec2u& pos)
+    {
+        uint16_t flat_pos = pos.y * VGA_DISPLAY_SIZE.x + pos.x;
+
+        out_byte(0x3D4, 0x0F);
+        out_byte(0x3D5, (uint8_t)(flat_pos & 0xFF));
+        out_byte(0x3D4, 0x0E);
+        out_byte(0x3D5, (uint8_t)((flat_pos >> 8) & 0xFF));
     }
 
     constexpr entry* get_entry(const vec2u& pos)
@@ -63,6 +74,8 @@ namespace terminal
         {
             scroll_down();
         }
+
+        update_vga_cursor_pos(cursor_pos);
     }
 
     void put_char_at(char ch, const vec2u& pos)
@@ -81,6 +94,8 @@ namespace terminal
         {
             next_line();
         }
+
+        update_vga_cursor_pos(cursor_pos);
     }
 
     void clear_screen()
@@ -97,6 +112,7 @@ namespace terminal
     void move_cursor(vec2u pos)
     {
         cursor_pos = pos;
+        update_vga_cursor_pos(cursor_pos);
     }
 
     void set_color(color foreground, color background)
