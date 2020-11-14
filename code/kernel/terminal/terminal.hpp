@@ -9,6 +9,8 @@
 
 namespace terminal
 {
+    static constexpr vec2u VGA_DISPLAY_SIZE = { 80, 25 };
+
     void init();
 
     void clear_screen();
@@ -32,6 +34,7 @@ namespace terminal
     }
 
     void move_cursor(const vec2u& pos);
+    const vec2u& get_cursor_pos();
 
     void set_color(color foreground, color background);
     void set_foreground_color(color color);

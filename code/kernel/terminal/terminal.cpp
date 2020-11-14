@@ -13,7 +13,6 @@
 namespace terminal
 {
     static constexpr auto VGA_DISPLAY_ADDRESS = 0xB8000;
-    static constexpr vec2u VGA_DISPLAY_SIZE = { 80, 25 };
 
     static vec2u cursor_pos;
     static entry* display;
@@ -107,12 +106,19 @@ namespace terminal
                 put_char_at(' ', { x, y });
             }
         }
+
+        move_cursor({ 0, 0 });
     }
 
-    void move_cursor(vec2u pos)
+    void move_cursor(const vec2u& pos)
     {
         cursor_pos = pos;
         update_vga_cursor_pos(cursor_pos);
+    }
+
+    const vec2u& get_cursor_pos()
+    {
+        return cursor_pos;
     }
 
     void set_color(color foreground, color background)

@@ -2,6 +2,7 @@
 
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
+#include "terminal/command_line.hpp"
 
 #include "port_utils.hpp"
 
@@ -21,6 +22,8 @@ void on_isr_callback(interrupts::sys_regs* regs)
     keyboard::key_event key_event{};
     key_event.key = static_cast<keyboard::key>(key_code & 0b01111111);
     key_event.state = static_cast<keyboard::button_state>((key_code & 0b10000000) >> 7);
+
+    command_line::send_input(key_event);
 }
 
 void keyboard::init()

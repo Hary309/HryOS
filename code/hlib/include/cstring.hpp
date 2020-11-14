@@ -15,4 +15,15 @@ namespace hlib
 
         return length;
     }
+
+    inline constexpr int cstring_compare(const char* a, const char* b)
+    {
+        while (*a && *a == *b)
+        {
+            ++a;
+            ++b;
+        }
+
+        return (*a > *b) - (*b > *a);
+    }
 } // namespace hlib
