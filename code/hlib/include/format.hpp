@@ -194,7 +194,7 @@ namespace hlib
     };
 
     template<>
-    struct formatter<const char*>
+    struct formatter<char*>
     {
         void parse(const char* /*fmt*/)
         {
@@ -211,7 +211,7 @@ namespace hlib
     };
 
     template<auto N>
-    struct formatter<const char[N]>
+    struct formatter<char[N]>
     {
         void parse(const char* /*fmt*/)
         {
@@ -219,7 +219,7 @@ namespace hlib
 
         void format(OutputFunction_t output, const char (&txt)[N])
         {
-            for (size_t i = 0; i < N; i++)
+            for (size_t i = 0; i < N && txt[i]; i++)
             {
                 output(txt[i]);
             }
@@ -259,7 +259,7 @@ namespace hlib
     {
         print_to_format_sign(output, fmt);
 
-        formatter<hlib::remove_reference_t<Arg>> f;
+        formatter<hlib::remove_const_t<hlib::remove_reference_t<Arg>>> f;
         f.parse(++fmt);
         f.format(output, hlib::forward<Arg>(arg));
 
@@ -280,7 +280,7 @@ namespace hlib
     {
         print_to_format_sign(output, fmt);
 
-        formatter<hlib::remove_reference_t<Arg>> f;
+        formatter<hlib::remove_const_t<hlib::remove_reference_t<Arg>>> f;
         f.parse(++fmt);
         f.format(output, hlib::forward<Arg>(arg));
 

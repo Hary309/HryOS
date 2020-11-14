@@ -128,6 +128,12 @@ namespace hlib
     };
 
     template<typename T>
+    struct remove_const<const T*>
+    {
+        using type = T*;
+    };
+
+    template<typename T>
     using remove_const_t = typename remove_const<T>::type;
 
     // add_const
