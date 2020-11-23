@@ -4,6 +4,7 @@
 #include <format.hpp>
 
 #include "drivers/keyboard.hpp"
+#include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
@@ -27,6 +28,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     interrupts::init();
 
     keyboard::init();
+
+    pit::init();
 
     terminal::init();
     terminal::clear_screen();
