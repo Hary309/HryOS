@@ -3,6 +3,7 @@
 #include <algorithm.hpp>
 
 #include "drivers/keyboard.hpp"
+#include "logger/logger.hpp"
 #include "terminal/terminal.hpp"
 
 #include "cstring.hpp"
@@ -14,22 +15,33 @@ struct command
 };
 
 static const auto MAX_BUFFER_SIZE = 32;
-static const auto COMMANDS_COUNT = 32;
+static const auto COMMANDS_ARRAY_SIZE = 32;
 
 static char input_buffer[MAX_BUFFER_SIZE]{};
 static int input_buffer_index = 0;
 
-command commands[COMMANDS_COUNT]{};
-int commands_size = 0;
+static command commands[COMMANDS_ARRAY_SIZE]{};
+static int commands_count = 0;
 
 void print_prompt()
 {
     terminal::print("> ");
 }
 
+void list_commands()
+{
+    terminal::print_line("");
+    terminal::print_line("Available commands:");
+
+    for (int i = 0; i < commands_count; i++)
+    {
+        terminal::print_line("- {}", commands[i].command);
+    }
+}
+
 bool call_callback()
 {
-    for (int i = 0; i < commands_size; i++)
+    for (int i = 0; i < commands_count; i++)
     {
         const auto& command = commands[i];
 
@@ -53,6 +65,8 @@ void command_line::init()
 
     register_command(
         "cls", +[] { terminal::clear_screen(); });
+
+    register_command("list", list_commands);
 }
 
 void command_line::send_input(const keyboard::key_event& key_event)
@@ -103,11 +117,13 @@ void command_line::send_input(const keyboard::key_event& key_event)
 
 void command_line::register_command(const char* command, command_callback_t* callback)
 {
-    if (commands_size < COMMANDS_COUNT - 1)
+    if (commands_count < COMMANDS_ARRAY_SIZE - 1)
     {
-        hlib::copy_n(command, 32, commands[commands_size].command);
-        commands[commands_size].callback = callback;
+        hlib::copy_n(command, 32, commands[commands_count].command);
+        commands[commands_count].callback = callback;
 
-        commands_size++;
+        logger::info("Registering {} at {}", command, commands_count);
+
+        commands_count++;
     }
 }
