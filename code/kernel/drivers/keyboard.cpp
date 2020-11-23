@@ -31,6 +31,8 @@ void keyboard::init()
     clear_buffer();
 
     interrupts::register_isr_callback(1, on_isr_callback);
+
+    logger::info("Keyboard driver initialized");
 }
 
 char keyboard::map_key_to_ascii(keyboard::key key)

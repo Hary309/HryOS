@@ -63,6 +63,8 @@ void pit::init()
     interrupts::register_isr_callback(0, irq_callback);
 
     command_line::register_command("uptime", command_line_timer);
+
+    logger::info("PIT driver initialized");
 }
 
 uint32_t pit::get_timer()
