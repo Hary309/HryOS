@@ -9,15 +9,15 @@
 void clear_buffer()
 {
     unsigned char key = 0;
-    while (((key = in_byte(0x64)) & 1) == 1)
+    while (((key = port::in_byte(0x64)) & 1) == 1)
     {
-        in_byte(0x60);
+        port::in_byte(0x60);
     }
 }
 
 void on_isr_callback(interrupts::sys_regs* regs)
 {
-    auto key_code = static_cast<uint8_t>(in_byte(0x60));
+    auto key_code = static_cast<uint8_t>(port::in_byte(0x60));
 
     keyboard::key_event key_event{};
     key_event.key = static_cast<keyboard::key>(key_code & 0b01111111);

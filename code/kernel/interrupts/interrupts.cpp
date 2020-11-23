@@ -142,21 +142,21 @@ void remap_pic()
 {
     // ICW1
     // Restart the both PICs
-    out_byte(PIC1_COMMAND, ICW1::init | ICW1::send_ICW4);
-    out_byte(PIC2_COMMAND, ICW1::init | ICW1::send_ICW4);
+    port::out_byte(PIC1_COMMAND, ICW1::init | ICW1::send_ICW4);
+    port::out_byte(PIC2_COMMAND, ICW1::init | ICW1::send_ICW4);
 
     // ICW2
-    out_byte(PIC1_DATA, PIC1_OFFSET); //Make PIC1 start at 32 (of IDT table)
-    out_byte(PIC2_DATA, PIC2_OFFSET); //Make PIC2 start at 40 (of IDT table)
+    port::out_byte(PIC1_DATA, PIC1_OFFSET); //Make PIC1 start at 32 (of IDT table)
+    port::out_byte(PIC2_DATA, PIC2_OFFSET); //Make PIC2 start at 40 (of IDT table)
 
     // ICW3
-    out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
-    out_byte(PIC2_DATA, 2);          // set selected IRQ port for master (2 from the right side)
+    port::out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
+    port::out_byte(PIC2_DATA, 2); // set selected IRQ port for master (2 from the right side)
 
     // ICW4
     // Set the default 8086 mode for PICs
-    out_byte(PIC1_DATA, ICW4::mode_8086);
-    out_byte(PIC2_DATA, ICW4::mode_8086);
+    port::out_byte(PIC1_DATA, ICW4::mode_8086);
+    port::out_byte(PIC2_DATA, ICW4::mode_8086);
 }
 
 void setup_idtp()
@@ -199,10 +199,10 @@ extern "C" __attribute__((fastcall)) void pic_handler(interrupts::sys_regs* regs
 {
     if (regs->irq_id >= 8)
     {
-        out_byte(0xA0, 0x20);
+        port::out_byte(0xA0, 0x20);
     }
 
-    out_byte(0x20, 0x20);
+    port::out_byte(0x20, 0x20);
 
     auto callback = isr_callbacks[regs->irq_id];
 

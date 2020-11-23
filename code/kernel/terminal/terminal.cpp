@@ -34,10 +34,10 @@ namespace terminal
     {
         uint16_t flat_pos = pos.y * VGA_DISPLAY_SIZE.x + pos.x;
 
-        out_byte(0x3D4, 0x0F);
-        out_byte(0x3D5, (uint8_t)(flat_pos & 0xFF));
-        out_byte(0x3D4, 0x0E);
-        out_byte(0x3D5, (uint8_t)((flat_pos >> 8) & 0xFF));
+        port::out_byte(0x3D4, 0x0F);
+        port::out_byte(0x3D5, (uint8_t)(flat_pos & 0xFF));
+        port::out_byte(0x3D4, 0x0E);
+        port::out_byte(0x3D5, (uint8_t)((flat_pos >> 8) & 0xFF));
     }
 
     constexpr entry* get_entry(const vec2u& pos)

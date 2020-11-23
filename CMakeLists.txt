@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # required for cross compiler
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
-# set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(HryOS C CXX ASM)
 enable_language(ASM_NASM)
