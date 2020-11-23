@@ -132,7 +132,11 @@ namespace hlib
 
         void format(OutputFunction_t output, uint64_t num)
         {
-            print_value(output, static_cast<uint32_t>(num >> 32));
+            if (num >> 32 != 0 || (num >> 32 == 0 && leading_zero))
+            {
+                print_value(output, static_cast<uint32_t>(num >> 32));
+            }
+
             print_value(output, static_cast<uint32_t>(num));
         }
 
