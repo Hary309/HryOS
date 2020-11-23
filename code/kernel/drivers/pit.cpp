@@ -2,6 +2,8 @@
 
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
+#include "terminal/command_line.hpp"
+#include "terminal/terminal.hpp"
 
 #include "port_utils.hpp"
 
@@ -11,7 +13,7 @@ static const uint16_t MC_REGISTER = 0x43; // mode/command register
 static const uint32_t OSCILLATOR_SPEED = 1193182; // Hz
 static const uint16_t CLOCK_SPEED = 1000;         // Hz (1ms)
 
-static uint32_t timer = 0;
+static uint64_t timer = 0;
 
 enum channel
 {
@@ -45,6 +47,11 @@ void irq_callback(interrupts::registers* regs)
     timer++;
 }
 
+void command_line_timer()
+{
+    terminal::print_line("Timer: {}s ({})", static_cast<float>(timer) / 1000, timer);
+}
+
 void pit::init()
 {
     const auto divisor = OSCILLATOR_SPEED / CLOCK_SPEED;
@@ -54,6 +61,8 @@ void pit::init()
     port::out_byte(CHANNEL_0_PORT, static_cast<uint8_t>(divisor >> 8));
 
     interrupts::register_isr_callback(0, irq_callback);
+
+    command_line::register_command("uptime", command_line_timer);
 }
 
 uint32_t pit::get_timer()
