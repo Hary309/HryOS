@@ -15,7 +15,7 @@ void clear_buffer()
     }
 }
 
-void on_isr_callback(interrupts::sys_regs* regs)
+void on_isr_callback(interrupts::registers* /*regs*/)
 {
     auto key_code = static_cast<uint8_t>(port::in_byte(0x60));
 

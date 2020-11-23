@@ -188,14 +188,14 @@ void setup_pic_interrupts()
     set_idt_entry(PIC2_OFFSET + 7, isr15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
-extern "C" __attribute__((fastcall)) void fault_handler(interrupts::sys_regs* regs)
+extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* regs)
 {
     logger::error("Exception");
     logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
-extern "C" __attribute__((fastcall)) void pic_handler(interrupts::sys_regs* regs)
+extern "C" __attribute__((fastcall)) void pic_handler(interrupts::registers* regs)
 {
     if (regs->irq_id >= 8)
     {

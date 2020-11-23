@@ -4,7 +4,7 @@
 
 namespace interrupts
 {
-    struct sys_regs
+    struct registers
     {
         uint32_t edi;
         uint32_t esi;
@@ -17,7 +17,7 @@ namespace interrupts
         uint32_t irq_id;
     };
 
-    using callback_t = void(sys_regs*);
+    using callback_t = void(registers*);
 
     void init();
 
