@@ -199,10 +199,10 @@ extern "C" __attribute__((fastcall)) void pic_handler(interrupts::registers* reg
 {
     if (regs->irq_id >= 8)
     {
-        port::out_byte(0xA0, 0x20);
+        port::out_byte(PIC2, 0x20);
     }
 
-    port::out_byte(0x20, 0x20);
+    port::out_byte(PIC1, 0x20);
 
     auto callback = isr_callbacks[regs->irq_id];
 
