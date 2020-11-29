@@ -6,6 +6,7 @@
 #include "terminal/terminal.hpp"
 
 #include "port_utils.hpp"
+#include "scheduler.hpp"
 
 static const uint16_t CHANNEL_0_PORT = 0x40;
 static const uint16_t MC_REGISTER = 0x43; // mode/command register
@@ -41,10 +42,12 @@ enum operating_mode
     mode_5 = 0b101 << 1  // hardware triggered strobe
 };
 
-void irq_callback(interrupts::registers* regs)
+void irq_callback(interrupts::registers* /*regs*/)
 {
-    // because PIT is to 1ms so I can just increase the variable
+    // because PIT is set to 1ms so I can just increase the variable
     timer++;
+
+    // scheduler::tick(regs);
 }
 
 void command_line_timer()

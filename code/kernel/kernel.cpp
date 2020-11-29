@@ -13,10 +13,41 @@
 #include "terminal/terminal.hpp"
 
 #include "multiboot.h"
+#include "scheduler.hpp"
 
 void shutdown_callback()
 {
     terminal::print_line("Shutting down...");
+}
+
+void task1()
+{
+    uint32_t time = pit::get_timer();
+    int counter = 0;
+
+    while (1)
+    {
+        if (pit::get_timer() - time > 1000)
+        {
+            logger::info("jeden {}", counter++);
+            time = pit::get_timer();
+        }
+    }
+}
+
+void task2()
+{
+    uint32_t time = pit::get_timer();
+    int counter = 0;
+
+    while (1)
+    {
+        if (pit::get_timer() - time > 1000)
+        {
+            logger::info("dwa {}", counter++);
+            time = pit::get_timer();
+        }
+    }
 }
 
 extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
@@ -48,4 +79,9 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     command_line::init();
 
     command_line::register_command("shutdown", shutdown_callback);
+
+    scheduler::create_task(task1);
+    scheduler::create_task(task2);
+
+    scheduler::init();
 }
