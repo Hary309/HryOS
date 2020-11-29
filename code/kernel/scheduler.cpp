@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
+#include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
+#include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 #include "terminal/command_line.hpp"
 
@@ -115,15 +117,15 @@ void scheduler::tick(interrupts::registers* regs)
 
     auto p = get_next_process();
 
+    if (p == current_process || p == nullptr)
+    {
+        return;
+    }
+
     if (current_process)
     {
         save_registers(current_process, regs);
         current_process->status = status::waiting;
-    }
-
-    if (p == current_process || p == nullptr)
-    {
-        return;
     }
 
     switch_process_to(p);
@@ -149,6 +151,10 @@ void scheduler::create_task(scheduler::task_t* task)
     p.registers.cs = gdt::KERNEL_CODE_SELECTOR;
     p.registers.eflags = 0x200;
     p.registers.eip = reinterpret_cast<uint32_t>(task);
+
+    logger::info(
+        "Added task {} stack: {x} - {x}", processes_size, reinterpret_cast<uint32_t>(&p.stack),
+        p.registers.esp);
 
     ++processes_size;
 }

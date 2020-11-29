@@ -22,30 +22,42 @@ void shutdown_callback()
 
 void task1()
 {
-    uint32_t time = pit::get_timer();
-    int counter = 0;
+    int counter = 100;
+    int timer = 0;
 
     while (1)
     {
-        if (pit::get_timer() - time > 1000)
+        if (pit::get_timer() - timer > 2)
         {
-            logger::info("jeden {}", counter++);
-            time = pit::get_timer();
+            auto cursor_pos = terminal::get_cursor_pos();
+
+            terminal::move_cursor({ 0, 10 });
+            terminal::print("{}", counter++);
+
+            terminal::move_cursor(cursor_pos);
+
+            timer = pit::get_timer();
         }
     }
 }
 
 void task2()
 {
-    uint32_t time = pit::get_timer();
     int counter = 0;
+    int timer = 0;
 
     while (1)
     {
-        if (pit::get_timer() - time > 1000)
+        if (pit::get_timer() - timer > 2)
         {
-            logger::info("dwa {}", counter++);
-            time = pit::get_timer();
+            auto cursor_pos = terminal::get_cursor_pos();
+
+            terminal::move_cursor({ terminal::VGA_DISPLAY_SIZE.x / 2, 10 });
+            terminal::print("{}", counter++);
+
+            terminal::move_cursor(cursor_pos);
+
+            timer = pit::get_timer();
         }
     }
 }
@@ -80,8 +92,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 
     command_line::register_command("shutdown", shutdown_callback);
 
-    scheduler::create_task(task1);
-    scheduler::create_task(task2);
+    command_line::register_command("run task1", []() { scheduler::create_task(task1); });
+    command_line::register_command("run task2", []() { scheduler::create_task(task2); });
 
     scheduler::init();
 }
