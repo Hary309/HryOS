@@ -67,7 +67,8 @@ void save_registers(process* p, interrupts::registers* regs)
     p->registers.edi = regs->edi;
     p->registers.esi = regs->esi;
     p->registers.ebp = regs->ebp;
-    p->registers.esp = regs->esp;
+    // 16 because of these pushed on stack before pushad: irq id, eip, cs, eflags (4 * 4 bytes)
+    p->registers.esp = regs->esp + 16;
     p->registers.ebx = regs->ebx;
     p->registers.edx = regs->edx;
     p->registers.ecx = regs->ecx;
