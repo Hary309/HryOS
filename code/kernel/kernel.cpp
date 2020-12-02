@@ -8,12 +8,12 @@
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
+#include "scheduler/scheduler.hpp"
 #include "terminal/color.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
 
 #include "multiboot.h"
-#include "scheduler.hpp"
 
 void shutdown_callback()
 {
@@ -48,7 +48,7 @@ void task2()
 
     while (1)
     {
-        if (pit::get_timer() - timer > 2)
+        if (pit::get_timer() - timer > 1000)
         {
             auto cursor_pos = terminal::get_cursor_pos();
 
@@ -92,8 +92,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 
     command_line::register_command("shutdown", shutdown_callback);
 
-    command_line::register_command("run task1", []() { scheduler::create_task(task1); });
-    command_line::register_command("run task2", []() { scheduler::create_task(task2); });
+    command_line::register_command("run task1", []() { scheduler::create_process(task1); });
+    command_line::register_command("run task2", []() { scheduler::create_process(task2); });
 
     scheduler::init();
 }

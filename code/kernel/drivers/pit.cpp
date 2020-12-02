@@ -2,11 +2,11 @@
 
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
+#include "scheduler/scheduler.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
 
 #include "port_utils.hpp"
-#include "scheduler.hpp"
 
 static const uint16_t CHANNEL_0_PORT = 0x40;
 static const uint16_t MC_REGISTER = 0x43; // mode/command register

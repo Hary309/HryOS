@@ -10,37 +10,9 @@
 #include "memory/gdt.hpp"
 #include "terminal/command_line.hpp"
 
-static const int STACK_SIZE = 8 * 1024;
+#include "process.hpp"
 
-enum class status
-{
-    waiting,
-    running,
-    blocked
-};
-
-struct registers
-{
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t esp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-
-    uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
-};
-
-struct process
-{
-    char stack[STACK_SIZE]{};
-    ::registers registers;
-    ::status status = ::status::blocked;
-};
+using namespace scheduler;
 
 static bool is_enabled = false;
 
@@ -55,7 +27,7 @@ process* get_next_process()
     {
         auto& p = processes[i];
 
-        if (p.status == status::waiting)
+        if (p.state == process::state::ready)
         {
             return &p;
         }
@@ -81,9 +53,9 @@ void save_registers(process* p, interrupts::registers* regs)
     p->registers.eflags = regs->eflags;
 }
 
-void switch_process_to(process* p)
+void switch_process(process* p)
 {
-    p->status = status::running;
+    p->state = process::process::state::running;
 
     current_process = p;
 
@@ -125,24 +97,37 @@ void scheduler::tick(interrupts::registers* regs)
     if (current_process)
     {
         save_registers(current_process, regs);
-        current_process->status = status::waiting;
+        current_process->state = process::state::ready;
     }
 
-    switch_process_to(p);
+    switch_process(p);
 }
 
-void scheduler::create_task(scheduler::task_t* task)
+void process_end()
+{
+    logger::info("process end!");
+    // auto& p = scheduler::current_process();
+
+    // if (p.state == process::state::running)
+    // {
+    //     p.state =
+    // }
+}
+
+void scheduler::create_process(scheduler::process_function_t* task)
 {
     process& p = processes[processes_size];
 
     hlib::fill_n(p.stack, STACK_SIZE, 0);
 
-    p.status = status::waiting;
+    p.stack[STACK_SIZE - 8] = reinterpret_cast<uint32_t>(process_end);
+
+    p.state = process::state::ready;
 
     p.registers.edi = 0;
     p.registers.esi = 0;
     p.registers.ebp = 0;
-    p.registers.esp = reinterpret_cast<uint32_t>(&p.stack[STACK_SIZE - 8]);
+    p.registers.esp = reinterpret_cast<uint32_t>(&p.stack[STACK_SIZE - 12]);
     p.registers.ebx = 0;
     p.registers.edx = 0;
     p.registers.ecx = 0;
@@ -157,6 +142,15 @@ void scheduler::create_task(scheduler::task_t* task)
         p.registers.esp);
 
     ++processes_size;
+}
+
+void terminate_process(pid_t pid)
+{
+}
+
+process* get_current_process()
+{
+    return current_process;
 }
 
 void scheduler::init()

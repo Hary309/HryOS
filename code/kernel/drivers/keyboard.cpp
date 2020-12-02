@@ -2,10 +2,10 @@
 
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
+#include "scheduler/scheduler.hpp"
 #include "terminal/command_line.hpp"
 
 #include "port_utils.hpp"
-#include "scheduler.hpp"
 
 void clear_buffer()
 {
