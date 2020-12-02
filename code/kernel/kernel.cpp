@@ -22,7 +22,7 @@ void shutdown_callback()
 
 void task1()
 {
-    int counter = 100;
+    int counter = 0;
     int timer = 0;
 
     while (1)
@@ -32,7 +32,7 @@ void task1()
             auto cursor_pos = terminal::get_cursor_pos();
 
             terminal::move_cursor({ 0, 10 });
-            terminal::print("{}", counter++);
+            terminal::print("{} sec", counter++);
 
             terminal::move_cursor(cursor_pos);
 
@@ -53,7 +53,7 @@ void task2()
             auto cursor_pos = terminal::get_cursor_pos();
 
             terminal::move_cursor({ terminal::VGA_DISPLAY_SIZE.x / 2, 10 });
-            terminal::print("{}", counter++);
+            terminal::print("{} sec", counter++);
 
             terminal::move_cursor(cursor_pos);
 

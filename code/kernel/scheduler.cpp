@@ -2,13 +2,13 @@
 
 #include <stdint.h>
 
+#include <algorithm.hpp>
+
 #include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 #include "terminal/command_line.hpp"
-
-#include "algorithm.hpp"
 
 static const int STACK_SIZE = 8 * 1024;
 
@@ -44,7 +44,7 @@ struct process
 
 static bool is_enabled = false;
 
-static process processes[4]{};
+static process processes[4];
 static int processes_size = 0;
 
 static process* current_process = nullptr;
@@ -90,18 +90,18 @@ void switch_process_to(process* p)
     asm("push %0" : : "g"(p->registers.esp));
     asm("pop %esp");
 
-    asm("push %0" ::"g"(p->registers.eflags));
-    asm("push %0" ::"g"(p->registers.cs));
-    asm("push %0" ::"g"(p->registers.eip));
+    asm("push %0" : : "g"(p->registers.eflags));
+    asm("push %0" : : "g"(p->registers.cs));
+    asm("push %0" : : "g"(p->registers.eip));
 
-    asm("push %0" ::"g"(p->registers.eax));
-    asm("push %0" ::"g"(p->registers.ecx));
-    asm("push %0" ::"g"(p->registers.edx));
-    asm("push %0" ::"g"(p->registers.ebx));
-    asm("push %0" ::"g"(p->registers.esp));
-    asm("push %0" ::"g"(p->registers.ebp));
-    asm("push %0" ::"g"(p->registers.esi));
-    asm("push %0" ::"g"(p->registers.edi));
+    asm("push %0" : : "g"(p->registers.eax));
+    asm("push %0" : : "g"(p->registers.ecx));
+    asm("push %0" : : "g"(p->registers.edx));
+    asm("push %0" : : "g"(p->registers.ebx));
+    asm("push %0" : : "g"(p->registers.esp));
+    asm("push %0" : : "g"(p->registers.ebp));
+    asm("push %0" : : "g"(p->registers.esi));
+    asm("push %0" : : "g"(p->registers.edi));
 
     asm("popa");
 
