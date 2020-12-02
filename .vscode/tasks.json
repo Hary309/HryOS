@@ -38,6 +38,12 @@
                 "Build ISO"
             ],
             "problemMatcher": []
-        }
+        },
+        {
+            "label": "Run QEMU Kernel with accelerator",
+            "type": "shell",
+            "command": "qemu-system-i386.exe -serial stdio -kernel build/HryOS -accel whpx",
+            "problemMatcher": []
+        },
     ]
 }
