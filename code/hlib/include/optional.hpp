@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utility.hpp"
 namespace hlib
 {
     template<typename T>
@@ -14,6 +15,15 @@ namespace hlib
         }
 
         optional(const T& value) : value_(value), has_value_(true)
+        {
+        }
+
+        optional(const optional<T>& rth) : value_(rth.value_), has_value_(rth.has_value_)
+        {
+        }
+
+        optional(optional<T>&& rth)
+            : value_(hlib::move(rth.value_)), has_value_(hlib::move(rth.value_))
         {
         }
 
