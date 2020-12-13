@@ -168,3 +168,9 @@ void scheduler::idle()
         asm("hlt");
     }
 }
+
+void scheduler::halt()
+{
+    interrupts::disable();
+    scheduler::idle();
+}

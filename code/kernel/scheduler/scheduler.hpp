@@ -17,4 +17,5 @@ namespace scheduler
     void init();
 
     void idle();
+    void halt();
 } // namespace scheduler
