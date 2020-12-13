@@ -93,6 +93,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     command_line::register_command("task", []() { scheduler::create_process(do_sth); });
 
     scheduler::init();
+    interrupts::enable();
 
     scheduler::idle();
 }

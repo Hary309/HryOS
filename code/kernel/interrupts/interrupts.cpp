@@ -243,8 +243,6 @@ void interrupts::init()
 
     setup_idtp();
 
-    interrupts::enable();
-
     logger::info("Interrupts initialized");
 }
 
