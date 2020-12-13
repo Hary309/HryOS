@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <algorithm.hpp>
+#include <circular_buffer.hpp>
 
 #include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
@@ -16,20 +17,23 @@
 
 using namespace scheduler;
 
+const auto PROCESS_COUNT = 8;
+
 static bool is_enabled = false;
 
-static process processes[4];
-static int processes_size = 0;
+static process processes[PROCESS_COUNT];
+
+static hlib::circular_buffer<process*, PROCESS_COUNT> ready_queue;
 
 static process* current_process = nullptr;
 
-process* get_next_process()
+process* get_free_process()
 {
-    for (int i = 0; i < processes_size; i++)
+    for (int i = 0; i < PROCESS_COUNT; i++)
     {
         auto& p = processes[i];
 
-        if (p.state == process::state::ready)
+        if (p.state == process::state::empty)
         {
             return &p;
         }
@@ -89,9 +93,16 @@ void scheduler::tick(interrupts::registers* regs)
         return;
     }
 
-    auto p = get_next_process();
+    auto optional_p = ready_queue.pop();
 
-    if (p == current_process || p == nullptr)
+    if (!optional_p.has_value())
+    {
+        return;
+    }
+
+    auto p = optional_p.value();
+
+    if (p == current_process)
     {
         return;
     }
@@ -100,6 +111,7 @@ void scheduler::tick(interrupts::registers* regs)
     {
         save_registers(current_process, regs);
         current_process->state = process::state::ready;
+        ready_queue.push(current_process);
     }
 
     switch_process(p);
@@ -124,31 +136,40 @@ void process_starter()
 
 void scheduler::create_process(process::function_t* task)
 {
-    process& p = processes[processes_size];
+    logger::info("Creating process...");
 
-    hlib::fill_n(p.stack, STACK_SIZE, 0);
+    process* p = get_free_process();
 
-    p.state = process::state::ready;
-    p.task = task;
+    if (p == nullptr)
+    {
+        logger::warning("Cannot create process!");
+        return;
+    }
 
-    p.registers.edi = 0;
-    p.registers.esi = 0;
-    p.registers.ebp = 0;
-    p.registers.esp = reinterpret_cast<uint32_t>(p.stack + STACK_SIZE);
-    p.registers.ebx = 0;
-    p.registers.edx = 0;
-    p.registers.ecx = 0;
-    p.registers.eax = 0;
+    hlib::fill_n(p->stack, STACK_SIZE, 0);
 
-    p.registers.cs = gdt::KERNEL_CODE_SELECTOR;
-    p.registers.eflags = 0x200;
-    p.registers.eip = reinterpret_cast<uint32_t>(process_starter);
+    p->pid = static_cast<int32_t>(p - processes);
+    p->state = process::state::ready;
+    p->task = task;
+
+    p->registers.edi = 0;
+    p->registers.esi = 0;
+    p->registers.ebp = 0;
+    p->registers.esp = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE);
+    p->registers.ebx = 0;
+    p->registers.edx = 0;
+    p->registers.ecx = 0;
+    p->registers.eax = 0;
+
+    p->registers.cs = gdt::KERNEL_CODE_SELECTOR;
+    p->registers.eflags = 0x200;
+    p->registers.eip = reinterpret_cast<uint32_t>(process_starter);
 
     logger::info(
-        "Added task {} stack: {x} - {x}", processes_size, reinterpret_cast<uint32_t>(&p.stack),
-        p.registers.esp);
+        "Added task {} stack: {x} - {x}", p->pid, reinterpret_cast<uint32_t>(&p->stack),
+        p->registers.esp);
 
-    ++processes_size;
+    ready_queue.push(p);
 }
 
 void terminate_process(pid_t pid)

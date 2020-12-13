@@ -7,6 +7,7 @@
 #include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
+#include "math/vec2.hpp"
 #include "memory/gdt.hpp"
 #include "scheduler/scheduler.hpp"
 #include "terminal/color.hpp"
@@ -20,15 +21,9 @@ void shutdown_callback()
     terminal::print_line("Shutting down...");
 }
 
-int task1()
-{
-    terminal::print_line("Doing sth...");
-    terminal::print_line("Done!");
+int task_count = 0;
 
-    return 0;
-}
-
-int task2()
+void task_base(const vec2u& pos)
 {
     int counter = 0;
     int timer = 0;
@@ -39,7 +34,7 @@ int task2()
         {
             auto cursor_pos = terminal::get_cursor_pos();
 
-            terminal::move_cursor({ terminal::VGA_DISPLAY_SIZE.x / 2, 10 });
+            terminal::move_cursor(pos);
             terminal::print("{} sec", counter++);
 
             terminal::move_cursor(cursor_pos);
@@ -47,6 +42,13 @@ int task2()
             timer = pit::get_timer();
         }
     }
+}
+
+int task()
+{
+    task_base({ static_cast<uint32_t>(10 + 10 * (task_count++ % 7)), 0 });
+
+    return 0;
 }
 
 extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
@@ -79,8 +81,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 
     command_line::register_command("shutdown", shutdown_callback);
 
-    command_line::register_command("run task1", []() { scheduler::create_process(task1); });
-    command_line::register_command("run task2", []() { scheduler::create_process(task2); });
+    command_line::register_command("run timer", []() { scheduler::create_process(task); });
 
     scheduler::init();
 
