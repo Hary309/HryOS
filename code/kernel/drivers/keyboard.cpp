@@ -5,7 +5,11 @@
 #include "scheduler/scheduler.hpp"
 #include "terminal/command_line.hpp"
 
+#include "circular_buffer.hpp"
+#include "optional.hpp"
 #include "port_utils.hpp"
+
+static hlib::circular_buffer<keyboard::key_event, 100> buffer;
 
 void clear_buffer()
 {
@@ -16,24 +20,15 @@ void clear_buffer()
     }
 }
 
-void on_isr_callback(interrupts::registers* regs)
+void on_isr_callback(interrupts::registers* /*regs*/)
 {
-    // logger::info("ip: {x} cs: {x} eflags: {b}", regs->eip, regs->cs, regs->eflags);
-
     auto key_code = static_cast<uint8_t>(port::in_byte(0x60));
 
     keyboard::key_event key_event{};
     key_event.key = static_cast<keyboard::key>(key_code & 0b01111111);
     key_event.state = static_cast<keyboard::button_state>((key_code & 0b10000000) >> 7);
 
-    if (key_event.key == keyboard::key::tab && key_event.state == keyboard::button_state::released)
-    {
-        scheduler::tick(regs);
-    }
-    else
-    {
-        command_line::send_input(key_event);
-    }
+    buffer.push(key_event);
 }
 
 void keyboard::init()
@@ -43,6 +38,16 @@ void keyboard::init()
     interrupts::register_isr_callback(1, on_isr_callback);
 
     logger::info("Keyboard driver initialized");
+}
+
+bool keyboard::is_buffer_empty()
+{
+    return buffer.empty();
+}
+
+hlib::optional<keyboard::key_event> keyboard::pull_key()
+{
+    return buffer.pop();
 }
 
 char keyboard::map_key_to_ascii(keyboard::key key)

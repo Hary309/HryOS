@@ -198,7 +198,7 @@ void list_process()
 
         if (p.state != scheduler::process::state::empty)
         {
-            terminal::print("{} {}s", p.pid, (timer - p.start_time) / 1000.f);
+            terminal::print("{} {0}s", p.pid, (timer - p.start_time) / 1000.f);
 
             terminal::move_cursor({ 10, pos.y });
             terminal::print("{}", state_to_text(p.state));

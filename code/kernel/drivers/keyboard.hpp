@@ -1,5 +1,7 @@
 #pragma once
 
+#include "optional.hpp"
+
 namespace keyboard
 {
     enum class button_state
@@ -102,6 +104,9 @@ namespace keyboard
     };
 
     void init();
+
+    bool is_buffer_empty();
+    hlib::optional<key_event> pull_key();
 
     char map_key_to_ascii(keyboard::key key);
 } // namespace keyboard

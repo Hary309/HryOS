@@ -4,6 +4,7 @@
 
 #include "drivers/keyboard.hpp"
 #include "logger/logger.hpp"
+#include "scheduler/scheduler.hpp"
 #include "terminal/terminal.hpp"
 
 #include "cstring.hpp"
@@ -59,17 +60,7 @@ bool call_callback()
     return false;
 }
 
-void command_line::init()
-{
-    print_prompt();
-
-    register_command(
-        "cls", +[] { terminal::clear_screen(); });
-
-    register_command("list", list_commands);
-}
-
-void command_line::send_input(const keyboard::key_event& key_event)
+void send_input(const keyboard::key_event& key_event)
 {
     const auto& cursor_pos = terminal::get_cursor_pos();
 
@@ -113,6 +104,34 @@ void command_line::send_input(const keyboard::key_event& key_event)
             input_buffer[--input_buffer_index] = '\0';
         }
     }
+}
+
+int terminal_process()
+{
+    while (true)
+    {
+        // TODO: don't waste processor, do waiting with blocking process
+        while (!keyboard::is_buffer_empty())
+        {
+            auto e = keyboard::pull_key();
+            if (e.has_value())
+            {
+                send_input(e.value());
+            }
+        }
+    }
+
+    return 0;
+}
+
+void command_line::init()
+{
+    print_prompt();
+
+    register_command("cls", [] { terminal::clear_screen(); });
+    register_command("list", list_commands);
+
+    scheduler::create_process(terminal_process);
 }
 
 void command_line::register_command(const char* command, command_callback_t* callback)
