@@ -51,6 +51,14 @@ int task()
     return 0;
 }
 
+int do_sth()
+{
+    terminal::print_line("Doing sth...");
+    terminal::print_line("Done");
+
+    return 1;
+}
+
 extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 {
     logger::init();
@@ -81,7 +89,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 
     command_line::register_command("shutdown", shutdown_callback);
 
-    command_line::register_command("run timer", []() { scheduler::create_process(task); });
+    command_line::register_command("rt", []() { scheduler::create_process(task); });
+    command_line::register_command("task", []() { scheduler::create_process(do_sth); });
 
     scheduler::init();
 

@@ -43,6 +43,21 @@ namespace scheduler
         registers registers;
         state state = state::empty;
         function_t* task = nullptr;
+        uint32_t start_time;
     };
+
+    inline const char* state_to_text(enum process::state state)
+    {
+        switch (state)
+        {
+            case process::state::running: return "RUNNING";
+            case process::state::ready: return "READY";
+            case process::state::blocked: return "BLOCKED";
+            case process::state::sleeping: return "SLEEPING";
+            case process::state::empty: return "EMPTY";
+        }
+
+        return "UNKNOWN";
+    }
 
 } // namespace scheduler

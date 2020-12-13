@@ -10,7 +10,9 @@
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 #include "terminal/command_line.hpp"
+#include "terminal/terminal.hpp"
 
+#include "array.hpp"
 #include "assert.hpp"
 #include "boot.hpp"
 #include "process.hpp"
@@ -21,7 +23,7 @@ const auto PROCESS_COUNT = 8;
 
 static bool is_enabled = false;
 
-static process processes[PROCESS_COUNT];
+static hlib::array<process, PROCESS_COUNT> processes;
 
 static hlib::circular_buffer<process*, PROCESS_COUNT> ready_queue;
 
@@ -29,10 +31,8 @@ static process* current_process = nullptr;
 
 process* get_free_process()
 {
-    for (int i = 0; i < PROCESS_COUNT; i++)
+    for (auto& p : processes)
     {
-        auto& p = processes[i];
-
         if (p.state == process::state::empty)
         {
             return &p;
@@ -131,6 +131,9 @@ void process_starter()
 
     logger::info("Process {} ended with result {}", current_process->pid, result);
 
+    current_process->state = scheduler::process::state::empty;
+    current_process = nullptr;
+
     scheduler::idle();
 }
 
@@ -148,9 +151,10 @@ void scheduler::create_process(process::function_t* task)
 
     hlib::fill_n(p->stack, STACK_SIZE, 0);
 
-    p->pid = static_cast<int32_t>(p - processes);
+    p->pid = static_cast<int32_t>(p - processes.begin());
     p->state = process::state::ready;
     p->task = task;
+    p->start_time = pit::get_timer();
 
     p->registers.edi = 0;
     p->registers.esi = 0;
@@ -172,7 +176,7 @@ void scheduler::create_process(process::function_t* task)
     ready_queue.push(p);
 }
 
-void terminate_process(pid_t pid)
+void scheduler::terminate_process(pid_t /*pid*/)
 {
 }
 
@@ -181,9 +185,33 @@ process* get_current_process()
     return current_process;
 }
 
+void list_process()
+{
+    terminal::print_line("Processes");
+    terminal::print_line("---------------");
+
+    uint32_t timer = pit::get_timer();
+
+    for (const auto& p : processes)
+    {
+        const auto& pos = terminal::get_cursor_pos();
+
+        if (p.state != scheduler::process::state::empty)
+        {
+            terminal::print("{} {}s", p.pid, (timer - p.start_time) / 1000.f);
+
+            terminal::move_cursor({ 10, pos.y });
+            terminal::print("{}", state_to_text(p.state));
+            terminal::next_line();
+        }
+    }
+}
+
 void scheduler::init()
 {
     is_enabled = true;
+
+    command_line::register_command("ps", list_process);
 }
 
 void scheduler::idle()
