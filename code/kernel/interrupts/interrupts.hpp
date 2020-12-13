@@ -25,4 +25,7 @@ namespace interrupts
     void init();
 
     void register_isr_callback(int irq_id, callback_t callback);
+
+    void enable();
+    void disable();
 } // namespace interrupts

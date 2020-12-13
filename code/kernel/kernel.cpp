@@ -20,28 +20,15 @@ void shutdown_callback()
     terminal::print_line("Shutting down...");
 }
 
-void task1()
+int task1()
 {
-    int counter = 0;
-    int timer = 0;
+    terminal::print_line("Doing sth...");
+    terminal::print_line("Done!");
 
-    while (1)
-    {
-        if (pit::get_timer() - timer > 2)
-        {
-            auto cursor_pos = terminal::get_cursor_pos();
-
-            terminal::move_cursor({ 0, 10 });
-            terminal::print("{} sec", counter++);
-
-            terminal::move_cursor(cursor_pos);
-
-            timer = pit::get_timer();
-        }
-    }
+    return 0;
 }
 
-void task2()
+int task2()
 {
     int counter = 0;
     int timer = 0;

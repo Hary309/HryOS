@@ -10,6 +10,8 @@
 #include "memory/gdt.hpp"
 #include "terminal/command_line.hpp"
 
+#include "assert.hpp"
+#include "boot.hpp"
 #include "process.hpp"
 
 using namespace scheduler;
@@ -103,31 +105,36 @@ void scheduler::tick(interrupts::registers* regs)
     switch_process(p);
 }
 
-void process_end()
+void process_starter()
 {
-    logger::info("process end!");
-    // auto& p = scheduler::current_process();
+    HRY_ASSERT(current_process != nullptr, "current_process is nullptr");
+    HRY_ASSERT(
+        current_process->state == scheduler::process::state::running,
+        "current_process is not running");
+    HRY_ASSERT(current_process != nullptr, "current_process::task is nullptr");
 
-    // if (p.state == process::state::running)
-    // {
-    //     p.state =
-    // }
+    logger::info("Starting process {}", current_process->pid);
+
+    int result = current_process->task();
+
+    logger::info("Process {} ended with result {}", current_process->pid, result);
+
+    scheduler::idle();
 }
 
-void scheduler::create_process(scheduler::process_function_t* task)
+void scheduler::create_process(process::function_t* task)
 {
     process& p = processes[processes_size];
 
     hlib::fill_n(p.stack, STACK_SIZE, 0);
 
-    p.stack[STACK_SIZE - 8] = reinterpret_cast<uint32_t>(process_end);
-
     p.state = process::state::ready;
+    p.task = task;
 
     p.registers.edi = 0;
     p.registers.esi = 0;
     p.registers.ebp = 0;
-    p.registers.esp = reinterpret_cast<uint32_t>(&p.stack[STACK_SIZE - 12]);
+    p.registers.esp = reinterpret_cast<uint32_t>(p.stack + STACK_SIZE);
     p.registers.ebx = 0;
     p.registers.edx = 0;
     p.registers.ecx = 0;
@@ -135,7 +142,7 @@ void scheduler::create_process(scheduler::process_function_t* task)
 
     p.registers.cs = gdt::KERNEL_CODE_SELECTOR;
     p.registers.eflags = 0x200;
-    p.registers.eip = reinterpret_cast<uint32_t>(task);
+    p.registers.eip = reinterpret_cast<uint32_t>(process_starter);
 
     logger::info(
         "Added task {} stack: {x} - {x}", processes_size, reinterpret_cast<uint32_t>(&p.stack),

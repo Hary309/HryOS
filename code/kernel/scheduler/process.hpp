@@ -10,6 +10,8 @@ namespace scheduler
 
     struct process
     {
+        using function_t = int();
+
         enum class state
         {
             empty,   // not defined
@@ -40,7 +42,7 @@ namespace scheduler
         char stack[STACK_SIZE]{};
         registers registers;
         state state = state::empty;
-        uint32_t sleep_end;
+        function_t* task = nullptr;
     };
 
 } // namespace scheduler

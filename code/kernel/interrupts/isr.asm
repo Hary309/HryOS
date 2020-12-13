@@ -35,13 +35,8 @@ isr_common:
     iret
 
 global load_idt
-global enable_interrupts
 
 load_idt:
 	mov eax, [esp + 4]
 	lidt [eax]
 	ret
-
-enable_interrupts:
-    sti
-    ret

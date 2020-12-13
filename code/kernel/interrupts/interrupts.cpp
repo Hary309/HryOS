@@ -7,6 +7,7 @@
 
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
+#include "scheduler/scheduler.hpp"
 
 #include "fault.hpp"
 #include "isr.hpp"
@@ -91,7 +92,6 @@ enum ICW4
 
 // external functions
 extern "C" int load_idt(idt_ptr* idtp);
-extern "C" void enable_interrupts();
 
 // variables
 static hlib::array<idt_entry, 256> IDT{};
@@ -192,6 +192,8 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
 {
     logger::error("Exception");
     logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
+
+    scheduler::halt();
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
@@ -221,7 +223,7 @@ void interrupts::init()
 
     setup_idtp();
 
-    enable_interrupts();
+    interrupts::enable();
 
     logger::info("Interrupts initialized");
 }
@@ -232,4 +234,14 @@ void interrupts::register_isr_callback(int irq_id, interrupts::callback_t callba
     {
         isr_callbacks[irq_id] = callback;
     }
+}
+
+void interrupts::enable()
+{
+    asm("sti");
+}
+
+void interrupts::disable()
+{
+    asm("cli");
 }
