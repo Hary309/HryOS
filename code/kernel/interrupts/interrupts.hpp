@@ -14,7 +14,9 @@ namespace interrupts
         uint32_t edx;
         uint32_t ecx;
         uint32_t eax;
+
         uint32_t irq_id;
+
         uint32_t eip;
         uint32_t cs;
         uint32_t eflags;

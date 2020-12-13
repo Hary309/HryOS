@@ -107,7 +107,7 @@ void scheduler::tick(interrupts::registers* regs)
         return;
     }
 
-    if (current_process)
+    if (current_process != nullptr)
     {
         save_registers(current_process, regs);
         current_process->state = process::state::ready;
@@ -198,7 +198,7 @@ void list_process()
 
         if (p.state != scheduler::process::state::empty)
         {
-            terminal::print("{} {0}s", p.pid, (timer - p.start_time) / 1000.f);
+            terminal::print("{} {}s", p.pid, (timer - p.start_time) / 1000);
 
             terminal::move_cursor({ 10, pos.y });
             terminal::print("{}", state_to_text(p.state));
