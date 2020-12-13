@@ -157,3 +157,14 @@ void scheduler::init()
 {
     is_enabled = true;
 }
+
+void scheduler::idle()
+{
+    asm("push %0" : : "g"(&kernel_stack_top));
+    asm("pop %esp");
+
+    while (true)
+    {
+        asm("hlt");
+    }
+}
