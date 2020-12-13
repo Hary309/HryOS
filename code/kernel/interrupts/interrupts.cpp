@@ -8,6 +8,8 @@
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 #include "scheduler/scheduler.hpp"
+#include "terminal/color.hpp"
+#include "terminal/terminal.hpp"
 
 #include "fault.hpp"
 #include "isr.hpp"
@@ -190,10 +192,28 @@ void setup_pic_interrupts()
 
 extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* regs)
 {
-    logger::error("Exception");
-    logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
+    interrupts::disable();
 
-    scheduler::halt();
+    terminal::clear_screen();
+    terminal::set_foreground_color(terminal::color::light_red);
+    terminal::print_line("Avada Kedavra has been casted!");
+    terminal::print_line("------------------------------");
+
+    terminal::set_foreground_color(terminal::color::white);
+    terminal::print_line("Message: {}", ERROR_MESSAGES[regs->irq_id]);
+
+    terminal::print_line("");
+
+    terminal::print_line("eax: {x}", regs->eax);
+    terminal::print_line("ecx: {x}", regs->ecx);
+    terminal::print_line("edx: {x}", regs->edx);
+    terminal::print_line("ebx: {x}", regs->ebx);
+    terminal::print_line("esp: {x}", regs->esp);
+    terminal::print_line("ebp: {x}", regs->ebp);
+    terminal::print_line("esi: {x}", regs->esi);
+    terminal::print_line("edi: {x}", regs->edi);
+
+    scheduler::idle();
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
