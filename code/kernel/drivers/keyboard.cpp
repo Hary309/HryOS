@@ -28,7 +28,7 @@ void on_isr_callback(interrupts::registers* /*regs*/)
     key_event.key = static_cast<keyboard::key>(key_code & 0b01111111);
     key_event.state = static_cast<keyboard::button_state>((key_code & 0b10000000) >> 7);
 
-    buffer.push(key_event);
+    buffer.push_back(key_event);
 }
 
 void keyboard::init()

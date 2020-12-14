@@ -40,11 +40,16 @@ namespace scheduler
         pid_t pid;
 
         char name[16]{};
+
         char stack[STACK_SIZE]{};
         registers registers;
+
         state state = state::empty;
+
         function_t* task = nullptr;
         uint32_t start_time;
+
+        uint32_t sleep_timeout;
     };
 
     inline const char* state_to_text(enum process::state state)

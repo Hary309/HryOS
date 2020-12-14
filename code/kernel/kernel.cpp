@@ -51,10 +51,11 @@ int task()
     return 0;
 }
 
-int do_sth()
+int spanko()
 {
-    terminal::print_line("Doing sth...");
-    terminal::print_line("Done");
+    terminal::print_line("Mam spanko");
+    sys_calls::sleep_ms(2000);
+    terminal::print_line("No i juz");
 
     return 1;
 }
@@ -91,6 +92,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     command_line::register_command("crash", []() { int a = 213 / 0; });
 
     command_line::register_command("rt", []() { scheduler::create_process("timer", task); });
+    command_line::register_command("spanko", []() { scheduler::create_process("spanko", spanko); });
 
     scheduler::init();
     interrupts::enable();

@@ -18,11 +18,11 @@ namespace hlib
         using size_type = size_t;
 
     public:
-        constexpr void push(const value_type& data)
+        constexpr void push_back(const value_type& value)
         {
             if (!full())
             {
-                buffer_[tail_] = data;
+                buffer_[tail_] = value;
                 tail_ = (tail_ + 1) % Size;
             }
         }
@@ -31,13 +31,13 @@ namespace hlib
         {
             if (!empty())
             {
-                value_type data = buffer_[head_];
+                value_type value = buffer_[head_];
 
                 buffer_[head_] = value_type();
 
                 head_ = (head_ + 1) % Size;
 
-                return data;
+                return value;
             }
 
             return {};

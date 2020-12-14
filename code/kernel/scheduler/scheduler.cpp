@@ -47,12 +47,13 @@ void save_registers(process* p, interrupts::registers* regs)
     p->registers.edi = regs->edi;
     p->registers.esi = regs->esi;
     p->registers.ebp = regs->ebp;
-    // 16 because of these pushed on stack before pushad: irq id, eip, cs, eflags (4 * 4 bytes)
-    p->registers.esp = regs->esp + 16;
     p->registers.ebx = regs->ebx;
     p->registers.edx = regs->edx;
     p->registers.ecx = regs->ecx;
     p->registers.eax = regs->eax;
+
+    // 16 because: irq id, eip, cs, eflags (4 * 4 bytes)
+    p->registers.esp = regs->esp + 16;
 
     p->registers.eip = regs->eip;
     p->registers.cs = regs->cs;
@@ -68,10 +69,12 @@ void switch_process(process* p)
     asm("push %0" : : "g"(p->registers.esp));
     asm("pop %esp");
 
+    // push for iret
     asm("push %0" : : "g"(p->registers.eflags));
     asm("push %0" : : "g"(p->registers.cs));
     asm("push %0" : : "g"(p->registers.eip));
 
+    // push for popa
     asm("push %0" : : "g"(p->registers.eax));
     asm("push %0" : : "g"(p->registers.ecx));
     asm("push %0" : : "g"(p->registers.edx));
@@ -93,6 +96,16 @@ void scheduler::tick(interrupts::registers* regs)
         return;
     }
 
+    // update sleeping processes
+    for (auto& p : processes)
+    {
+        if (p.state == process::state::sleeping && pit::get_timer() > p.sleep_timeout)
+        {
+            p.state = process::state::ready;
+            ready_queue.push_back(&p);
+        }
+    }
+
     auto optional_p = ready_queue.pop();
 
     if (!optional_p.has_value())
@@ -110,11 +123,18 @@ void scheduler::tick(interrupts::registers* regs)
     if (current_process != nullptr)
     {
         save_registers(current_process, regs);
-        current_process->state = process::state::ready;
-        ready_queue.push(current_process);
+
+        if (current_process->state == process::state::running)
+        {
+            current_process->state = process::state::ready;
+            ready_queue.push_back(current_process);
+        }
     }
 
-    switch_process(p);
+    if (p->state == process::state::ready)
+    {
+        switch_process(p);
+    }
 }
 
 void process_starter()
@@ -174,7 +194,7 @@ void scheduler::create_process(const char* name, process::function_t* task)
         "Added task {} stack: {x} - {x}", p->pid, reinterpret_cast<uint32_t>(&p->stack),
         p->registers.esp);
 
-    ready_queue.push(p);
+    ready_queue.push_back(p);
 }
 
 void scheduler::terminate_process(pid_t /*pid*/)
@@ -217,6 +237,17 @@ void scheduler::init()
     is_enabled = true;
 
     command_line::register_command("ps", list_process);
+}
+
+void scheduler::sleep_ms(uint32_t time)
+{
+    if (current_process != nullptr)
+    {
+        current_process->state = process::state::sleeping;
+        current_process->sleep_timeout = pit::get_timer() + time;
+
+        logger::info("Process {} sleep {}ms", current_process->pid, time);
+    }
 }
 
 void scheduler::idle()

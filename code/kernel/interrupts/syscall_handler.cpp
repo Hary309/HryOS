@@ -14,6 +14,9 @@ uint32_t system_calls_index = 0;
 void sleep_ms_handler(interrupts::registers* regs)
 {
     uint32_t time = regs->ebx;
+    scheduler::sleep_ms(time);
+
+    scheduler::tick(regs);
 }
 
 extern "C" __attribute__((fastcall)) void syscall_handler(interrupts::registers* regs)

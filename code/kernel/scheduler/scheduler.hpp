@@ -14,6 +14,8 @@ namespace scheduler
 
     void init();
 
+    void sleep_ms(uint32_t time);
+
     void idle();
     void halt();
 } // namespace scheduler
