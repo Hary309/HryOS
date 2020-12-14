@@ -48,7 +48,7 @@ bool call_callback()
 
         if (hlib::cstring_compare(input_buffer, command.command) == 0)
         {
-            if (command.callback)
+            if (command.callback != nullptr)
             {
                 command.callback();
             }

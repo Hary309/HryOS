@@ -19,6 +19,14 @@ void sleep_ms_handler(interrupts::registers* regs)
     scheduler::tick(regs);
 }
 
+void wait_for_handler(interrupts::registers* regs)
+{
+    uint32_t pid = regs->ebx;
+    scheduler::wait_for(pid);
+
+    scheduler::tick(regs);
+}
+
 extern "C" __attribute__((fastcall)) void syscall_handler(interrupts::registers* regs)
 {
     uint32_t id = regs->eax;
@@ -32,4 +40,5 @@ extern "C" __attribute__((fastcall)) void syscall_handler(interrupts::registers*
 void syscall_init()
 {
     system_calls[system_calls_index++] = sleep_ms_handler;
+    system_calls[system_calls_index++] = wait_for_handler;
 }

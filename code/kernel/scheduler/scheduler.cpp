@@ -99,7 +99,8 @@ void scheduler::tick(interrupts::registers* regs)
     // update sleeping processes
     for (auto& p : processes)
     {
-        if (p.state == process::state::sleeping && pit::get_timer() > p.sleep_timeout)
+        if (p.state == process::state::sleeping &&
+            pit::get_timer() > p.state_data.get<process::sleep_data>().value().sleep_timeout)
         {
             p.state = process::state::ready;
             ready_queue.push_front(&p);
@@ -151,13 +152,23 @@ void process_starter()
 
     logger::info("Process {} ended with result {}", current_process->pid, result);
 
+    for (auto& p : processes)
+    {
+        if (p.state == process::state::waiting &&
+            p.state_data.get<process::waiting_data>().value().pid == current_process->pid)
+        {
+            p.state = process::state::ready;
+            ready_queue.push_back(&p);
+        }
+    }
+
     current_process->state = scheduler::process::state::empty;
     current_process = nullptr;
 
     scheduler::idle();
 }
 
-void scheduler::create_process(const char* name, process::function_t* task)
+hlib::optional<pid_t> scheduler::create_process(const char* name, process::function_t* task)
 {
     logger::info("Creating process...");
 
@@ -166,7 +177,7 @@ void scheduler::create_process(const char* name, process::function_t* task)
     if (p == nullptr)
     {
         logger::warning("Cannot create process!");
-        return;
+        return {};
     }
 
     hlib::fill_n(p->stack, STACK_SIZE, 0);
@@ -195,13 +206,15 @@ void scheduler::create_process(const char* name, process::function_t* task)
         p->registers.esp);
 
     ready_queue.push_back(p);
+
+    return p->pid;
 }
 
 void scheduler::terminate_process(pid_t /*pid*/)
 {
 }
 
-process* get_current_process()
+process* scheduler::get_current_process()
 {
     return current_process;
 }
@@ -232,11 +245,21 @@ void list_process()
     }
 }
 
+int idle_process()
+{
+    while (true)
+    {
+        asm("hlt");
+    }
+}
+
 void scheduler::init()
 {
     is_enabled = true;
 
     command_line::register_command("ps", list_process);
+
+    create_process("idle", idle_process);
 }
 
 void scheduler::sleep_ms(uint32_t time)
@@ -244,9 +267,20 @@ void scheduler::sleep_ms(uint32_t time)
     if (current_process != nullptr)
     {
         current_process->state = process::state::sleeping;
-        current_process->sleep_timeout = pit::get_timer() + time;
+        current_process->state_data = process::sleep_data{ pit::get_timer() + time };
 
         logger::info("Process {} sleep {}ms", current_process->pid, time);
+    }
+}
+
+void scheduler::wait_for(pid_t pid)
+{
+    if (current_process != nullptr)
+    {
+        current_process->state = process::state::waiting;
+        current_process->state_data = process::waiting_data{ pid };
+
+        logger::info("Process {} waiting for {}", current_process->pid, pid);
     }
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional.hpp>
+
 #include "interrupts/interrupts.hpp"
 #include "scheduler/process.hpp"
 
@@ -7,7 +9,7 @@ namespace scheduler
 {
     void tick(interrupts::registers* regs);
 
-    void create_process(const char* name, process::function_t* task);
+    hlib::optional<pid_t> create_process(const char* name, process::function_t* task);
     void terminate_process(pid_t pid);
 
     process* get_current_process();
@@ -15,6 +17,7 @@ namespace scheduler
     void init();
 
     void sleep_ms(uint32_t time);
+    void wait_for(pid_t pid);
 
     void idle();
     void halt();

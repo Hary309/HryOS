@@ -97,10 +97,15 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     command_line::init();
 
     command_line::register_command("shutdown", shutdown_callback);
-    command_line::register_command("crash", []() { int a = 213 / 0; });
+    command_line::register_command("crash", [] { int a = 213 / 0; });
 
-    command_line::register_command("rt", []() { scheduler::create_process("timer", task); });
-    command_line::register_command("spanko", []() { scheduler::create_process("spanko", spanko); });
+    command_line::register_command("rt", [] { scheduler::create_process("timer", task); });
+    command_line::register_command("sleep", [] { scheduler::create_process("sleep", spanko); });
+
+    command_line::register_command("deep_sleep", [] {
+        auto pid = scheduler::create_process("deep_sleep", spanko);
+        sys_calls::wait_for(pid.value());
+    });
 
     scheduler::init();
     interrupts::enable();
