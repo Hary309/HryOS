@@ -3,6 +3,8 @@
 
 #include <format.hpp>
 
+#include "concurrency/lock_guard.hpp"
+#include "concurrency/mutex.hpp"
 #include "drivers/keyboard.hpp"
 #include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
@@ -15,32 +17,34 @@
 #include "terminal/terminal.hpp"
 
 #include "multiboot.h"
+#include "sys_calls.hpp"
+
+static int task_count = 0;
+static mutex terminal_mutex;
 
 void shutdown_callback()
 {
     terminal::print_line("Shutting down...");
 }
 
-int task_count = 0;
-
 void task_base(const vec2u& pos)
 {
     int counter = 0;
-    int timer = 0;
 
     while (1)
     {
-        if (pit::get_timer() - timer > 1000)
-        {
-            auto cursor_pos = terminal::get_cursor_pos();
+        terminal_mutex.spinlock();
 
-            terminal::move_cursor(pos);
-            terminal::print("{} sec", counter++);
+        auto cursor_pos = terminal::get_cursor_pos();
 
-            terminal::move_cursor(cursor_pos);
+        terminal::move_cursor(pos);
+        terminal::print("{} sec", counter++);
 
-            timer = pit::get_timer();
-        }
+        terminal::move_cursor(cursor_pos);
+
+        terminal_mutex.unlock();
+
+        sys_calls::sleep_ms(1000);
     }
 }
 
@@ -53,9 +57,13 @@ int task()
 
 int spanko()
 {
+    terminal_mutex.spinlock();
+
     terminal::print_line("Mam spanko");
     sys_calls::sleep_ms(2000);
     terminal::print_line("No i juz");
+
+    terminal_mutex.unlock();
 
     return 1;
 }
