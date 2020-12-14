@@ -215,6 +215,14 @@ namespace hlib
     template<bool B, typename T, typename F>
     using conditional_t = typename conditional<B, T, F>::type;
 
+    // is_trivially_default_constructible
+
+    template<typename T>
+    struct is_trivially_default_constructible
+    {
+        static constexpr const bool value = __has_trivial_constructor(T);
+    };
+
     // is_trivially_destructible
 
     template<typename T>
@@ -229,12 +237,30 @@ namespace hlib
         static constexpr const bool value = true;
     };
 
-    // is_trivially_destructible
+    // is_trivially_copyable
+
+    template<typename T>
+    struct is_trivially_copyable
+    {
+        static constexpr const bool value = __has_trivial_copy(T);
+    };
+
+    // has_trivial_assign
 
     template<typename T>
     struct has_trivial_assign
     {
         static constexpr const bool value = __has_trivial_assign(T);
+    };
+
+    // is_trivial
+
+    template<class T>
+    struct is_trivial
+        : integral_constant<
+              bool,
+              is_trivially_copyable<T>::value && is_trivially_default_constructible<T>::value>
+    {
     };
 
     // is_pointer
