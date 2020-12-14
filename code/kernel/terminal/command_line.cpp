@@ -131,7 +131,7 @@ void command_line::init()
     register_command("cls", [] { terminal::clear_screen(); });
     register_command("list", list_commands);
 
-    scheduler::create_process(terminal_process);
+    scheduler::create_process("terminal", terminal_process);
 }
 
 void command_line::register_command(const char* command, command_callback_t* callback)

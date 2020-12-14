@@ -137,7 +137,7 @@ void process_starter()
     scheduler::idle();
 }
 
-void scheduler::create_process(process::function_t* task)
+void scheduler::create_process(const char* name, process::function_t* task)
 {
     logger::info("Creating process...");
 
@@ -150,6 +150,7 @@ void scheduler::create_process(process::function_t* task)
     }
 
     hlib::fill_n(p->stack, STACK_SIZE, 0);
+    hlib::copy_n(name, 16, p->name);
 
     p->pid = static_cast<int32_t>(p - processes.begin());
     p->state = process::state::ready;
@@ -198,10 +199,14 @@ void list_process()
 
         if (p.state != scheduler::process::state::empty)
         {
-            terminal::print("{} {}s", p.pid, (timer - p.start_time) / 1000);
+            terminal::print("{} {}", p.pid, p.name);
 
-            terminal::move_cursor({ 10, pos.y });
+            terminal::move_cursor({ 20, pos.y });
+            terminal::print("{}s", (timer - p.start_time) / 1000);
+
+            terminal::move_cursor({ 30, pos.y });
             terminal::print("{}", state_to_text(p.state));
+
             terminal::next_line();
         }
     }

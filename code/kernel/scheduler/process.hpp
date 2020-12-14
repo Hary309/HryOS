@@ -39,6 +39,7 @@ namespace scheduler
 
         pid_t pid;
 
+        char name[16]{};
         char stack[STACK_SIZE]{};
         registers registers;
         state state = state::empty;

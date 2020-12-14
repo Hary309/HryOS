@@ -90,8 +90,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     command_line::register_command("shutdown", shutdown_callback);
     command_line::register_command("crash", []() { int a = 213 / 0; });
 
-    command_line::register_command("rt", []() { scheduler::create_process(task); });
-    command_line::register_command("task", []() { scheduler::create_process(do_sth); });
+    command_line::register_command("rt", []() { scheduler::create_process("timer", task); });
 
     scheduler::init();
     interrupts::enable();

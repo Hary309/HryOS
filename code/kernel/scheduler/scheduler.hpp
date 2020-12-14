@@ -7,7 +7,7 @@ namespace scheduler
 {
     void tick(interrupts::registers* regs);
 
-    void create_process(process::function_t* task);
+    void create_process(const char* name, process::function_t* task);
     void terminate_process(pid_t pid);
 
     process* get_current_process();
