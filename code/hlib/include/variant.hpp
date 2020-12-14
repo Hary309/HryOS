@@ -60,6 +60,8 @@ namespace hlib
         using buffer_t = typename hlib::aligned_storage<buffer_size, buffer_align>::type;
 
     public:
+        variant() = default;
+
         template<typename T>
         variant(const T& value)
         {
@@ -97,6 +99,6 @@ namespace hlib
 
     private:
         buffer_t buffer_;
-        size_t type_id_;
+        size_t type_id_{ static_cast<size_t>(-1) };
     };
 } // namespace hlib
