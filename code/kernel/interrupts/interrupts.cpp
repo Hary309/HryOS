@@ -14,6 +14,7 @@
 #include "fault.hpp"
 #include "isr.hpp"
 #include "port_utils.hpp"
+#include "syscall_handler.hpp"
 
 using IRQ_t = int();
 
@@ -115,6 +116,35 @@ void set_idt_entry(size_t offset, IRQ_t irq, uint16_t selector, gate_type type, 
     entry.offset_higherbits = address >> 16;
 }
 
+void remap_pic()
+{
+    // ICW1
+    // Restart the both PICs
+    port::out_byte(PIC1_COMMAND, ICW1::init | ICW1::send_ICW4);
+    port::out_byte(PIC2_COMMAND, ICW1::init | ICW1::send_ICW4);
+
+    // ICW2
+    port::out_byte(PIC1_DATA, PIC1_OFFSET); //Make PIC1 start at 32 (of IDT table)
+    port::out_byte(PIC2_DATA, PIC2_OFFSET); //Make PIC2 start at 40 (of IDT table)
+
+    // ICW3
+    port::out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
+    port::out_byte(PIC2_DATA, 2); // set selected IRQ port for master (2 from the right side)
+
+    // ICW4
+    // Set the default 8086 mode for PICs
+    port::out_byte(PIC1_DATA, ICW4::mode_8086);
+    port::out_byte(PIC2_DATA, ICW4::mode_8086);
+}
+
+void load_idtp()
+{
+    IDTP.size = (IDT.size() * sizeof(idt_entry));
+    IDTP.idt = IDT.data();
+
+    load_idt(&IDTP);
+}
+
 void setup_fault()
 {
     set_idt_entry(0, fault0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
@@ -140,35 +170,6 @@ void setup_fault()
     set_idt_entry(20, fault20, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
-void remap_pic()
-{
-    // ICW1
-    // Restart the both PICs
-    port::out_byte(PIC1_COMMAND, ICW1::init | ICW1::send_ICW4);
-    port::out_byte(PIC2_COMMAND, ICW1::init | ICW1::send_ICW4);
-
-    // ICW2
-    port::out_byte(PIC1_DATA, PIC1_OFFSET); //Make PIC1 start at 32 (of IDT table)
-    port::out_byte(PIC2_DATA, PIC2_OFFSET); //Make PIC2 start at 40 (of IDT table)
-
-    // ICW3
-    port::out_byte(PIC1_DATA, 0b00000100); // select IRQ2 as connection with PIC2
-    port::out_byte(PIC2_DATA, 2); // set selected IRQ port for master (2 from the right side)
-
-    // ICW4
-    // Set the default 8086 mode for PICs
-    port::out_byte(PIC1_DATA, ICW4::mode_8086);
-    port::out_byte(PIC2_DATA, ICW4::mode_8086);
-}
-
-void setup_idtp()
-{
-    IDTP.size = (IDT.size() * sizeof(idt_entry));
-    IDTP.idt = IDT.data();
-
-    load_idt(&IDTP);
-}
-
 void setup_pic_interrupts()
 {
     set_idt_entry(PIC1_OFFSET + 0, isr0, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
@@ -188,6 +189,11 @@ void setup_pic_interrupts()
     set_idt_entry(PIC2_OFFSET + 5, isr13, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
     set_idt_entry(PIC2_OFFSET + 6, isr14, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
     set_idt_entry(PIC2_OFFSET + 7, isr15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
+}
+
+void setup_syscall()
+{
+    set_idt_entry(50, syscall, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
 extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* regs)
@@ -247,12 +253,15 @@ extern "C" __attribute__((fastcall)) void pic_handler(interrupts::registers* reg
 
 void interrupts::init()
 {
-    setup_fault();
-
     remap_pic();
-    setup_pic_interrupts();
 
-    setup_idtp();
+    setup_fault();
+    setup_pic_interrupts();
+    setup_syscall();
+
+    load_idtp();
+
+    syscall_init();
 
     logger::info("Interrupts initialized");
 }
