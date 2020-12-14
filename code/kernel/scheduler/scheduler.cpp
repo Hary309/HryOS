@@ -102,7 +102,7 @@ void scheduler::tick(interrupts::registers* regs)
         if (p.state == process::state::sleeping && pit::get_timer() > p.sleep_timeout)
         {
             p.state = process::state::ready;
-            ready_queue.push_back(&p);
+            ready_queue.push_front(&p);
         }
     }
 
