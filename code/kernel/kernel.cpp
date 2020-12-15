@@ -7,12 +7,13 @@
 #include "concurrency/mutex.hpp"
 #include "drivers/keyboard.hpp"
 #include "drivers/pit.hpp"
+#include "drivers/vga/color.hpp"
+#include "drivers/vga/vga.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "math/vec2.hpp"
 #include "memory/gdt.hpp"
 #include "scheduler/scheduler.hpp"
-#include "terminal/color.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
 
@@ -80,6 +81,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
 
     pit::init();
 
+    vga::init();
+
     terminal::init();
     terminal::clear_screen();
 
@@ -90,9 +93,9 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     }
 
     terminal::print("Hry");
-    terminal::set_foreground_color(terminal::color::cyan);
+    terminal::set_foreground_color(vga::color::cyan);
     terminal::print_line("OS!");
-    terminal::set_foreground_color(terminal::color::white);
+    terminal::set_foreground_color(vga::color::white);
 
     command_line::init();
 

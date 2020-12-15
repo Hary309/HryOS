@@ -2,15 +2,13 @@
 
 #include <format.hpp>
 
+#include "drivers/vga/color.hpp"
 #include "math/vec2.hpp"
 
-#include "color.hpp"
 #include "utility.hpp"
 
 namespace terminal
 {
-    static constexpr vec2u VGA_DISPLAY_SIZE = { 80, 25 };
-
     void init();
 
     void clear_screen();
@@ -36,7 +34,7 @@ namespace terminal
     void move_cursor(const vec2u& pos);
     const vec2u& get_cursor_pos();
 
-    void set_color(color foreground, color background);
-    void set_foreground_color(color color);
-    void set_background_color(color color);
+    void set_color(vga::color foreground, vga::color background);
+    void set_foreground_color(vga::color color);
+    void set_background_color(vga::color color);
 } // namespace terminal

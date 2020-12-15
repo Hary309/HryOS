@@ -5,10 +5,10 @@
 #include <algorithm.hpp>
 #include <array.hpp>
 
+#include "drivers/vga/color.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
 #include "scheduler/scheduler.hpp"
-#include "terminal/color.hpp"
 #include "terminal/terminal.hpp"
 
 #include "fault.hpp"
@@ -201,11 +201,11 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
     interrupts::disable();
 
     terminal::clear_screen();
-    terminal::set_foreground_color(terminal::color::light_red);
+    terminal::set_foreground_color(vga::color::light_red);
     terminal::print_line("Avada Kedavra has been casted!");
     terminal::print_line("------------------------------");
 
-    terminal::set_foreground_color(terminal::color::white);
+    terminal::set_foreground_color(vga::color::white);
     terminal::print_line("Message: {}", ERROR_MESSAGES[regs->irq_id]);
 
     terminal::print_line("");

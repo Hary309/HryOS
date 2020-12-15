@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace terminal
+namespace vga
 {
     enum class color
     {
@@ -34,4 +34,4 @@ namespace terminal
             return static_cast<uint8_t>(foreground) | static_cast<uint8_t>(background) << 4;
         }
     };
-} // namespace terminal
+} // namespace vga
