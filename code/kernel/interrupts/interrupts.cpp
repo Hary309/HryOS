@@ -220,6 +220,7 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
     terminal::print_line("edi: {x}", regs->edi);
     terminal::print_line("eip: {x}", regs->eip);
 
+    logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
     logger::info("eax: {x}", regs->eax);
     logger::info("ecx: {x}", regs->ecx);
     logger::info("edx: {x}", regs->edx);
