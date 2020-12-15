@@ -7,8 +7,12 @@ struct vec2
     T y;
 
     constexpr vec2() = default;
-    constexpr vec2(T x, T y) : x(x), y(y) {}
-    constexpr explicit vec2(T value) : x(value), y(value) {}
+    constexpr vec2(T x, T y) : x(x), y(y)
+    {
+    }
+    constexpr explicit vec2(T value) : x(value), y(value)
+    {
+    }
 };
 
 template<typename T>
@@ -108,6 +112,18 @@ template<typename T>
 constexpr bool operator==(const vec2<T>& left, const vec2<T>& right)
 {
     return left.x == right.x && left.y == right.y;
+}
+
+template<typename T>
+constexpr bool operator<(const vec2<T>& left, const vec2<T>& right)
+{
+    return left.x < right.x && left.y < right.y;
+}
+
+template<typename T>
+constexpr bool operator>(const vec2<T>& left, const vec2<T>& right)
+{
+    return left.x > right.x && left.y > right.y;
 }
 
 // TODO: add spaceship operator

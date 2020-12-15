@@ -7,6 +7,7 @@
 #include "concurrency/mutex.hpp"
 #include "drivers/keyboard.hpp"
 #include "drivers/pit.hpp"
+#include "drivers/vesa/vesa.hpp"
 #include "drivers/vga/color.hpp"
 #include "drivers/vga/vga.hpp"
 #include "interrupts/interrupts.hpp"
@@ -69,7 +70,7 @@ int spanko()
     return 1;
 }
 
-extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
+extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 {
     logger::init();
 
@@ -82,6 +83,10 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* /*info*/)
     pit::init();
 
     vga::init();
+
+    vesa::init(mbi);
+
+    // asm("hlt");
 
     terminal::init();
     terminal::clear_screen();

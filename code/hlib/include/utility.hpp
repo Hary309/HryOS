@@ -37,4 +37,10 @@ namespace hlib
         obj = forward<U>(new_value);
         return old_value;
     }
+
+    template<typename T>
+    constexpr bool get_bit(T value, int bit)
+    {
+        return ((value) & (1 << bit));
+    }
 } // namespace hlib
