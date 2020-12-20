@@ -596,4 +596,62 @@ namespace hlib
 
     template<class T>
     inline constexpr bool is_unsigned_v = is_unsigned<T>::value;
+
+    template<typename T>
+    struct is_signed : false_type
+    {
+    };
+    template<>
+    struct is_signed<char> : integral_constant<bool, (char(255) < 0)>
+    {
+    };
+    template<>
+    struct is_signed<wchar_t>
+        : public integral_constant<bool, static_cast<bool>(wchar_t(-1) < wchar_t(0))>
+    {
+    };
+    template<>
+    struct is_signed<signed char> : true_type
+    {
+    };
+    template<>
+    struct is_signed<short> : true_type
+    {
+    };
+    template<>
+    struct is_signed<int> : true_type
+    {
+    };
+    template<>
+    struct is_signed<long> : true_type
+    {
+    };
+    template<>
+    struct is_signed<long long> : true_type
+    {
+    };
+    template<>
+    struct is_signed<float> : true_type
+    {
+    };
+    template<>
+    struct is_signed<double> : true_type
+    {
+    };
+    template<>
+    struct is_signed<long double> : true_type
+    {
+    };
+    template<typename T>
+    struct is_signed<const T> : is_signed<T>
+    {
+    };
+    template<typename T>
+    struct is_signed<volatile T> : is_signed<T>
+    {
+    };
+    template<typename T>
+    struct is_signed<const volatile T> : is_signed<T>
+    {
+    };
 } // namespace hlib
