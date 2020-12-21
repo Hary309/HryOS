@@ -132,7 +132,42 @@ void terminal::impl::set_cursor_at(const vec2u& pos)
 
 void terminal::impl::scroll_down()
 {
-    // TODO
+    const auto& screen_size = vesa::get_screen_size();
+    const auto font_height = current_font->size.y;
+
+    vesa::color* display = vesa::get_display();
+
+    vesa::color* display_it = display;
+    vesa::color* display_end = display + screen_size.x * (screen_size.y - font_height);
+
+    vesa::color* buffer_it = reinterpret_cast<vesa::color*>(buffered_screen);
+
+    const vesa::color* src_it =
+        reinterpret_cast<vesa::color*>(buffered_screen) + screen_size.x * font_height;
+
+    // move pixel by font_height up
+    while (display_it != display_end)
+    {
+        *display_it = *src_it;
+        *buffer_it = *src_it;
+
+        ++display_it;
+        ++buffer_it;
+        ++src_it;
+    }
+
+    display_it = display_end;
+    display_end = display + screen_size.x * screen_size.y;
+
+    // clear last line
+    while (display_it != display_end)
+    {
+        *display_it = { 0, 0, 0 };
+        *buffer_it = { 0, 0, 0 };
+
+        ++display_it;
+        ++buffer_it;
+    }
 }
 
 #endif
