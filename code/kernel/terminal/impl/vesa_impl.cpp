@@ -16,9 +16,11 @@
 
 #if USE_VESA
 
-static fonts::font* current_font;
+static fonts::font* current_font = nullptr;
 
-static vesa::color buffered_screen[720][1280];
+static vesa::color buffered_screen[720][1280]{};
+
+static vec2u last_cursor_text_pos{ 0, 0 };
 
 vesa::color terminal_to_vesa_color(terminal::color color)
 {
@@ -72,6 +74,7 @@ void reset_char(const vec2u& text_pos)
 void terminal::impl::init()
 {
     current_font = &fonts::ZAP_LIGHT_16;
+    set_cursor_at({ 0, 0 });
 }
 
 void terminal::impl::clear_screen()
@@ -125,9 +128,31 @@ uint32_t terminal::impl::get_height()
     return vesa::get_screen_size().y / current_font->size.y;
 }
 
-void terminal::impl::set_cursor_at(const vec2u& pos)
+void terminal::impl::set_cursor_at(const vec2u& text_pos)
 {
-    // TODO
+    const auto last_screen_pos = get_screen_pos(last_cursor_text_pos);
+    const auto screen_pos = get_screen_pos(text_pos);
+    const auto& font_size = current_font->size;
+
+    // restore
+    for (size_t y = 0; y < font_size.y; y++)
+    {
+        const auto pos = last_screen_pos + vec2u{ 2, y };
+        const auto& pixel = buffered_screen[pos.y][pos.x];
+
+        vesa::set_pixel(pos, vesa::color::create(pixel.r, pixel.g, pixel.b));
+    }
+
+    // set new pos
+    for (size_t y = 0; y < font_size.y; y++)
+    {
+        const auto pos = screen_pos + vec2u{ 2, y };
+        const auto& pixel = buffered_screen[pos.y][pos.x];
+
+        vesa::set_pixel(pos, vesa::color::create(255 - pixel.r, 255 - pixel.g, 255 - pixel.b));
+    }
+
+    last_cursor_text_pos = text_pos;
 }
 
 void terminal::impl::scroll_down()
