@@ -19,6 +19,7 @@
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
 
+#include "config.hpp"
 #include "multiboot.h"
 #include "sys_calls.hpp"
 
@@ -83,11 +84,12 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 
     pit::init();
 
-    vga::init();
-
+#if USE_VESA
+    fonts::init();
     vesa::init(mbi);
-
-    // asm("hlt");
+#else
+    vga::init();
+#endif
 
     terminal::init();
     terminal::clear_screen();

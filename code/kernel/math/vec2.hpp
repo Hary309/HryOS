@@ -70,6 +70,12 @@ constexpr vec2<T> operator*(const vec2<T>& left, T right)
 }
 
 template<typename T>
+constexpr vec2<T> operator*(const vec2<T>& left, const vec2<T>& right)
+{
+    return { left.x * right.x, left.y * right.y };
+}
+
+template<typename T>
 constexpr vec2<T> operator*(T left, const vec2<T>& right)
 {
     return { left.x * right, left.y * right };
