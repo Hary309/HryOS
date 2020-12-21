@@ -10,6 +10,7 @@
 #include "drivers/vesa/vesa.hpp"
 #include "drivers/vga/color.hpp"
 #include "drivers/vga/vga.hpp"
+#include "fonts/fonts.hpp"
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "math/vec2.hpp"
