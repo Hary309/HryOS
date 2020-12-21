@@ -33,7 +33,7 @@ void shutdown_callback()
 
 void task_base(const vec2u& pos)
 {
-    int counter = 0;
+    int timer_start = pit::get_timer();
 
     while (1)
     {
@@ -42,8 +42,7 @@ void task_base(const vec2u& pos)
         auto cursor_pos = terminal::get_cursor_pos();
 
         terminal::move_cursor(pos);
-        terminal::print("{} sec", counter++);
-
+        terminal::print("{} sec", (pit::get_timer() - timer_start) / 1000);
         terminal::move_cursor(cursor_pos);
 
         terminal_mutex.unlock();
@@ -113,8 +112,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
     command_line::register_command("rt", [] { scheduler::create_process("timer", task); });
     command_line::register_command("sleep", [] { scheduler::create_process("sleep", spanko); });
 
-    command_line::register_command("deep_sleep", [] {
-        auto pid = scheduler::create_process("deep_sleep", spanko);
+    command_line::register_command("wait", [] {
+        auto pid = scheduler::create_process("wait", spanko);
         sys_calls::wait_for(pid.value());
     });
 
