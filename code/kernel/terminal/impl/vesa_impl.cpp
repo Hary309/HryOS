@@ -47,6 +47,15 @@ void reset_char(const vec2u& pos)
 {
     const auto real_pos = pos * vec2u{ 8, 16 };
 
+vec2u get_screen_pos(const vec2u& text_pos)
+{
+    return text_pos * current_font->size;
+}
+
+void reset_char(const vec2u& text_pos)
+{
+    const auto screen_pos = get_screen_pos(text_pos);
+
     for (size_t y = 0; y < 16; y++)
     {
         for (size_t x = 0; x < 8; x++)
@@ -75,21 +84,22 @@ void terminal::impl::clear_screen()
     }
 }
 
-void terminal::impl::put_char_at(char ch, const vec2u& pos, const terminal::combined_color& color)
+void terminal::impl::put_char_at(
+    char ch, const vec2u& text_pos, const terminal::combined_color& color)
 {
-    reset_char(pos);
+    reset_char(text_pos);
 
     const auto& current_glyph = current_font->glyphs[(uint32_t)ch];
     const auto vesa_color = terminal_to_vesa_color(color.foreground);
-    const auto real_pos = pos * vec2u{ 8, 16 };
+    const auto screen_pos = get_screen_pos(text_pos);
 
-    for (size_t y = 0; y < 16; y++)
+    for (size_t y = 0; y < current_font->size.y; y++)
     {
         const auto& current_row = current_glyph.data[y];
 
-        for (size_t x = 0; x < 8; x++)
+        for (size_t x = 0; x < current_font->size.x; x++)
         {
-            if (hlib::get_bit(current_row, 7 - x))
+            if (hlib::get_bit(current_row, current_font->size.x - 1 - x))
             {
                 vesa::set_pixeL(real_pos + vec2u{ x, y }, vesa_color);
             }
@@ -99,12 +109,12 @@ void terminal::impl::put_char_at(char ch, const vec2u& pos, const terminal::comb
 
 uint32_t terminal::impl::get_width()
 {
-    return vesa::get_screen_size().x / 8;
+    return vesa::get_screen_size().x / current_font->size.x;
 }
 
 uint32_t terminal::impl::get_height()
 {
-    return vesa::get_screen_size().y / 16;
+    return vesa::get_screen_size().y / current_font->size.y;
 }
 
 void terminal::impl::set_cursor_at(const vec2u& pos)
