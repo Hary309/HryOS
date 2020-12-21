@@ -40,7 +40,7 @@ bool vesa::init(multiboot_info* mbi)
     return true;
 }
 
-void vesa::set_pixeL(const vec2u& pos, color color)
+void vesa::set_pixel(const vec2u& pos, color color)
 {
     if (initialized && pos < screen_size)
     {
