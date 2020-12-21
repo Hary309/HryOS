@@ -98,9 +98,9 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
     }
 
     terminal::print("Hry");
-    terminal::set_foreground_color(vga::color::cyan);
+    terminal::set_foreground_color(terminal::color::cyan);
     terminal::print_line("OS!");
-    terminal::set_foreground_color(vga::color::white);
+    terminal::set_foreground_color(terminal::color::white);
 
     command_line::init();
 
