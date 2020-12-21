@@ -18,6 +18,8 @@
 
 static fonts::font* current_font;
 
+static vesa::color buffered_screen[720][1280];
+
 vesa::color terminal_to_vesa_color(terminal::color color)
 {
     switch (color)
@@ -43,9 +45,11 @@ vesa::color terminal_to_vesa_color(terminal::color color)
     return { 255, 255, 255 };
 }
 
-void reset_char(const vec2u& pos)
+void set_pixel(const vec2u& pos, vesa::color color)
 {
-    const auto real_pos = pos * vec2u{ 8, 16 };
+    buffered_screen[pos.y][pos.x] = color;
+    vesa::set_pixel(pos, color);
+}
 
 vec2u get_screen_pos(const vec2u& text_pos)
 {
@@ -60,7 +64,7 @@ void reset_char(const vec2u& text_pos)
     {
         for (size_t x = 0; x < 8; x++)
         {
-            vesa::set_pixeL(real_pos + vec2u{ x, y }, { 0, 0, 0 });
+            set_pixel(screen_pos + vec2u{ x, y }, { 0, 0, 0 });
         }
     }
 }
@@ -77,10 +81,14 @@ void terminal::impl::clear_screen()
     auto* it = vesa::get_display();
     auto* end = it + screen_size.x * screen_size.y;
 
+    vesa::color* buffer_it = reinterpret_cast<vesa::color*>(buffered_screen);
+
     while (it != end)
     {
         *it = {};
+        *buffer_it = {};
         ++it;
+        ++buffer_it;
     }
 }
 
@@ -101,7 +109,7 @@ void terminal::impl::put_char_at(
         {
             if (hlib::get_bit(current_row, current_font->size.x - 1 - x))
             {
-                vesa::set_pixeL(real_pos + vec2u{ x, y }, vesa_color);
+                ::set_pixel(screen_pos + vec2u{ x, y }, vesa_color);
             }
         }
     }
