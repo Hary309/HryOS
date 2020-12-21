@@ -66,8 +66,7 @@ void switch_process(process* p)
 
     current_process = p;
 
-    asm("push %0" : : "g"(p->registers.esp));
-    asm("pop %esp");
+    asm("mov %0, %%esp" : : "g"(p->registers.esp));
 
     // push for iret
     asm("push %0" : : "g"(p->registers.eflags));
@@ -260,6 +259,8 @@ void scheduler::init()
     command_line::register_command("ps", list_process);
 
     create_process("idle", idle_process);
+
+    logger::info("Scheduler initialized");
 }
 
 void scheduler::sleep_ms(uint32_t time)

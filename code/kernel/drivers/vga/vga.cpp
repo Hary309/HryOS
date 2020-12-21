@@ -1,6 +1,7 @@
 #include "vga.hpp"
 
 #include "drivers/vga/entry.hpp"
+#include "logger/logger.hpp"
 
 #include "port_utils.hpp"
 
@@ -11,6 +12,8 @@ static vga::entry* display;
 void vga::init()
 {
     display = reinterpret_cast<entry*>(VGA_DISPLAY_ADDRESS);
+
+    logger::info("VGA driver initialized");
 }
 
 vga::entry* vga::get_entry(const vec2u& pos)

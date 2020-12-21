@@ -1,10 +1,12 @@
 #include "vesa.hpp"
 
+#include <binary.hpp>
+
 #include "drivers/vesa/color.hpp"
 #include "logger/logger.hpp"
 #include "math/vec2.hpp"
 
-#include "utility.hpp"
+#include "assert.hpp"
 
 static bool initialized = false;
 
@@ -17,11 +19,7 @@ static vec2u screen_size;
 
 bool vesa::init(multiboot_info* mbi)
 {
-    if (!hlib::get_bit(mbi->flags, 12))
-    {
-        logger::error("VESA is not available!");
-        return false;
-    }
+    HRY_ASSERT(hlib::get_bit(mbi->flags, 12), "VESA is not available!");
 
     display = reinterpret_cast<vesa::color*>(mbi->framebuffer_addr);
 
@@ -29,29 +27,22 @@ bool vesa::init(multiboot_info* mbi)
     pitch = mbi->framebuffer_pitch;
     bpp = mbi->framebuffer_bpp;
 
-    logger::info("[vesa] Screen: {x}", mbi->framebuffer_addr);
-    logger::info("[vesa] Size: {}x{}", screen_size.x, screen_size.y);
-    logger::info("[vesa] Pitch: {}", pitch);
-    logger::info("[vesa] Bits per pixel: {}", bpp);
-
-    for (size_t y = 100; y < 355; y++)
-    {
-        for (size_t x = 200; x < 500; x++)
-        {
-            set_pixeL({ x, y }, { y - 100, y - 100, y - 100 });
-        }
-    }
+    logger::info("VESA info:");
+    logger::info("- Screen: {x}", mbi->framebuffer_addr);
+    logger::info("- Size: {}x{}", screen_size.x, screen_size.y);
+    logger::info("- Pitch: {}", pitch);
+    logger::info("- Bits per pixel: {}", bpp);
 
     initialized = true;
 
-    logger::info("[vesa] Initialized");
+    logger::info("VESA driver initialized");
 
     return true;
 }
 
 void vesa::set_pixeL(const vec2u& pos, color color)
 {
-    if (pos < screen_size)
+    if (initialized && pos < screen_size)
     {
         auto* pixel = display + pos.y * screen_size.x + pos.x;
         *reinterpret_cast<vesa::color*>(pixel) = color;
@@ -61,4 +52,9 @@ void vesa::set_pixeL(const vec2u& pos, color color)
 const vec2u& vesa::get_screen_size()
 {
     return screen_size;
+}
+
+vesa::color* vesa::get_display()
+{
+    return display;
 }
