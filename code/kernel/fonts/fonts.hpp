@@ -4,6 +4,8 @@
 
 #include <array.hpp>
 
+#include "math/vec2.hpp"
+
 namespace fonts
 {
     struct glyph
@@ -14,6 +16,7 @@ namespace fonts
     struct font
     {
         glyph* glyphs;
+        vec2u size;
     };
 
     inline font ZAP_LIGHT_16{};

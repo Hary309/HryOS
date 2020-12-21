@@ -17,6 +17,7 @@ bool fonts::load_psf_font(uint8_t* data, font& f)
     auto* begin = data + sizeof(psf1_header);
 
     f.glyphs = reinterpret_cast<glyph*>(begin);
+    f.size = { 8, 16 };
 
     return true;
 }
