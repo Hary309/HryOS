@@ -10,7 +10,7 @@ CHECKSUM equ -(MAGIC + FLAGS)             ; checksum of above, to prove we are m
 FB_MODE   equ 0      ; 0 mode for linear graphics mode
 FB_WIDTH  equ 1280   ; screen witdth
 FB_HEIGHT equ 720    ; screen height
-FB_DEPTH  equ 32 	 ; bitrs per pixel
+FB_DEPTH  equ 32 	 ; bits per pixel
 
  
 ; Declare a multiboot header that marks the program as a kernel. These are magic
