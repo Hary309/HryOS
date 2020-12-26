@@ -15,6 +15,7 @@
 #include "logger/logger.hpp"
 #include "math/vec2.hpp"
 #include "memory/gdt.hpp"
+#include "memory/memory_map.hpp"
 #include "scheduler/scheduler.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
@@ -76,6 +77,8 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
     logger::init();
 
     gdt::init();
+
+    mmap::init(mbi);
 
     interrupts::init();
 
