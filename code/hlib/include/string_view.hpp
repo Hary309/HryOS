@@ -2,6 +2,8 @@
 
 #include <stddef.h>
 
+#include "format.hpp"
+
 namespace hlib
 {
     class string_view
@@ -91,5 +93,22 @@ namespace hlib
     private:
         pointer begin_ = nullptr;
         pointer end_ = nullptr;
+    };
+
+    template<>
+    struct formatter<string_view>
+    {
+        void parse(const char* /*fmt*/)
+        {
+        }
+
+        template<typename Output>
+        void format(Output output, string_view str)
+        {
+            for (auto it : str)
+            {
+                output(it);
+            }
+        }
     };
 } // namespace hlib
