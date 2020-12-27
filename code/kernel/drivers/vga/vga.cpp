@@ -3,7 +3,7 @@
 #include "drivers/vga/entry.hpp"
 #include "logger/logger.hpp"
 
-#include "port_utils.hpp"
+#include "serial_port.hpp"
 
 static constexpr auto VGA_DISPLAY_ADDRESS = 0xB8000;
 

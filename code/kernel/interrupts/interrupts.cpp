@@ -13,7 +13,7 @@
 
 #include "fault.hpp"
 #include "isr.hpp"
-#include "port_utils.hpp"
+#include "serial_port.hpp"
 #include "syscall_handler.hpp"
 
 using IRQ_t = int();

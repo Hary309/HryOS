@@ -7,7 +7,7 @@
 
 #include "circular_buffer.hpp"
 #include "optional.hpp"
-#include "port_utils.hpp"
+#include "serial_port.hpp"
 
 static hlib::circular_buffer<keyboard::key_event, 100> buffer;
 

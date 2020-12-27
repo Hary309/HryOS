@@ -1,6 +1,6 @@
 #include "logger.hpp"
 
-#include "port_utils.hpp"
+#include "serial_port.hpp"
 
 constexpr auto COM1_PORT = 0x3F8;
 

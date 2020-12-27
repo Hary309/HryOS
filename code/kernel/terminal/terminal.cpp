@@ -8,7 +8,7 @@
 #include "impl/impl.hpp"
 #include "logger/logger.hpp"
 
-#include "port_utils.hpp"
+#include "serial_port.hpp"
 
 namespace terminal
 {
