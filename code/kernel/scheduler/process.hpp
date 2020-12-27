@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include <string_view.hpp>
 #include <variant.hpp>
 
 namespace scheduler
@@ -66,7 +67,7 @@ namespace scheduler
         uint32_t start_time;
     };
 
-    inline const char* state_to_text(enum process::state state)
+    inline hlib::string_view state_to_text(enum process::state state)
     {
         switch (state)
         {

@@ -30,7 +30,7 @@ namespace hlib
         void format(OutputFunction_t output, int num)
         {
             char buffer[33]{};
-            to_chars(buffer, buffer + 32, static_cast<int32_t>(num), base);
+            to_chars(buffer, buffer + 32, static_cast<T>(num), base);
 
             auto* it = buffer;
 

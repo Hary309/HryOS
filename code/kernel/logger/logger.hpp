@@ -1,8 +1,8 @@
 #pragma once
 
 #include <format.hpp>
-
-#include "utility.hpp"
+#include <string_view.hpp>
+#include <utility.hpp>
 
 namespace logger
 {
@@ -16,7 +16,7 @@ namespace logger
     void init();
     void write_char(char ch);
 
-    inline const char* string_level(level lvl)
+    inline hlib::string_view string_level(level lvl)
     {
         switch (lvl)
         {
