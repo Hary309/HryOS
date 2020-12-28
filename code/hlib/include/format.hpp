@@ -240,7 +240,7 @@ namespace hlib
         void format(OutputFunction_t output, T* addr)
         {
             char buffer[33]{};
-            to_chars(buffer, buffer + 32, reinterpret_cast<uint32_t>(addr), 16);
+            to_chars(buffer, buffer + 32, reinterpret_cast<uint32_t>(addr), num_base::hex);
 
             auto* it = buffer;
 

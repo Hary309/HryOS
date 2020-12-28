@@ -10,17 +10,5 @@ namespace kheap
 
     void free(void* addr);
 
-    template<typename T>
-    [[nodiscard]] T* allocate()
-    {
-        return reinterpret_cast<T*>(allocate(sizeof(T)));
-    }
-
-    template<typename T>
-    void free(T* addr)
-    {
-        free(reinterpret_cast<void*>(addr));
-    }
-
     void print();
 } // namespace kheap

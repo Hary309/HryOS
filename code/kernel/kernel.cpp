@@ -28,6 +28,21 @@
 static int task_count = 0;
 static mutex terminal_mutex;
 
+void* operator new(size_t size)
+{
+    return kheap::allocate(size);
+}
+
+void operator delete(void* ptr)
+{
+    kheap::free(ptr);
+}
+
+void operator delete(void* ptr, long unsigned int)
+{
+    kheap::free(ptr);
+}
+
 void shutdown_callback()
 {
     terminal::print_line("Shutting down...");
@@ -81,6 +96,10 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 
     mmap::init(mbi);
     kheap::init();
+
+    int* value = new int(123456);
+    logger::info("Value: {}", *value);
+    delete value;
 
     interrupts::init();
 
