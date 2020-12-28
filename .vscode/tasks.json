@@ -27,7 +27,10 @@
         {
             "label": "Run QEMU in GDB mode",
             "type": "shell",
-            "command": "qemu-system-i386 -serial stdio -s -S -kernel build/HryOS",
+            "command": "qemu-system-i386 -serial stdio -s -S -cdrom HryOS.iso",
+            "dependsOn": [
+                "Build ISO"
+            ],
             "problemMatcher": [],
         },
         {
@@ -42,7 +45,10 @@
         {
             "label": "Run QEMU Kernel with accelerator",
             "type": "shell",
-            "command": "qemu-system-i386.exe -serial stdio -kernel build/HryOS -accel whpx",
+            "command": "qemu-system-i386.exe -serial stdio -cdrom HryOS.iso -accel whpx",
+            "dependsOn": [
+                "Build ISO"
+            ],
             "problemMatcher": []
         },
     ]
