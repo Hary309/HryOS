@@ -12,6 +12,8 @@
 
 namespace terminal
 {
+    static bool is_initialized = false;
+
     static vec2u cursor_pos;
 
     static combined_color current_color;
@@ -26,10 +28,15 @@ namespace terminal
         current_color.foreground = terminal::color::white;
 
         logger::info("Terminal initialized");
+
+        is_initialized = true;
     }
 
     void scroll_down()
     {
+        if (!is_initialized)
+            return;
+
         impl::scroll_down();
 
         cursor_pos.y--;
@@ -37,6 +44,9 @@ namespace terminal
 
     void next_line()
     {
+        if (!is_initialized)
+            return;
+
         cursor_pos.x = 0;
 
         cursor_pos.y++;
@@ -51,11 +61,17 @@ namespace terminal
 
     void put_char_at(char ch, const vec2u& pos)
     {
+        if (!is_initialized)
+            return;
+
         impl::put_char_at(ch, pos, current_color);
     }
 
     void put_char(char ch)
     {
+        if (!is_initialized)
+            return;
+
         put_char_at(ch, cursor_pos);
 
         cursor_pos.x++;
@@ -70,12 +86,18 @@ namespace terminal
 
     void clear_screen()
     {
+        if (!is_initialized)
+            return;
+
         impl::clear_screen();
         move_cursor({ 0, 0 });
     }
 
     void move_cursor(const vec2u& pos)
     {
+        if (!is_initialized)
+            return;
+
         cursor_pos = pos;
         impl::set_cursor_at(cursor_pos);
     }

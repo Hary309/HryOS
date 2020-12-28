@@ -19,11 +19,11 @@ namespace mmap
             badram = 5
         };
 
-        uint32_t size;
-        uint64_t addr;
-        uint64_t length;
+        uint32_t size = 0;
+        uint64_t addr = 0;
+        uint64_t length = 0;
 
-        type type;
+        type type = type::reserved;
     } __attribute__((packed));
 
     bool init(multiboot_info* mbi);

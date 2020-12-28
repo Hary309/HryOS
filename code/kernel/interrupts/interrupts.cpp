@@ -200,6 +200,17 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
 {
     interrupts::disable();
 
+    logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
+    logger::info("eax: {x}", regs->eax);
+    logger::info("ecx: {x}", regs->ecx);
+    logger::info("edx: {x}", regs->edx);
+    logger::info("ebx: {x}", regs->ebx);
+    logger::info("esp: {x}", regs->esp);
+    logger::info("ebp: {x}", regs->ebp);
+    logger::info("esi: {x}", regs->esi);
+    logger::info("edi: {x}", regs->edi);
+    logger::info("eip: {x}", regs->eip);
+
     terminal::clear_screen();
     terminal::set_foreground_color(terminal::color::light_red);
     terminal::print_line("Avada Kedavra has been casted!");
@@ -219,17 +230,6 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
     terminal::print_line("esi: {x}", regs->esi);
     terminal::print_line("edi: {x}", regs->edi);
     terminal::print_line("eip: {x}", regs->eip);
-
-    logger::info("Message: {}", ERROR_MESSAGES[regs->irq_id]);
-    logger::info("eax: {x}", regs->eax);
-    logger::info("ecx: {x}", regs->ecx);
-    logger::info("edx: {x}", regs->edx);
-    logger::info("ebx: {x}", regs->ebx);
-    logger::info("esp: {x}", regs->esp);
-    logger::info("ebp: {x}", regs->ebp);
-    logger::info("esi: {x}", regs->esi);
-    logger::info("edi: {x}", regs->edi);
-    logger::info("eip: {x}", regs->eip);
 
     scheduler::idle();
 }

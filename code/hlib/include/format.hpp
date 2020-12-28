@@ -230,6 +230,28 @@ namespace hlib
         }
     };
 
+    template<typename T>
+    struct formatter<T*>
+    {
+        void parse(const char* /*fmt*/)
+        {
+        }
+
+        void format(OutputFunction_t output, T* addr)
+        {
+            char buffer[33]{};
+            to_chars(buffer, buffer + 32, reinterpret_cast<uint32_t>(addr), 16);
+
+            auto* it = buffer;
+
+            while (*it)
+            {
+                output(*it);
+                it++;
+            }
+        }
+    };
+
     inline bool is_start_formatting(char ch)
     {
         return ch == '{';
