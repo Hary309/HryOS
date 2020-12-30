@@ -7,18 +7,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
 
-project(HryOS C CXX ASM)
-enable_language(ASM_NASM)
-
-if(NOT CMAKE_ASM_NASM_COMPILER_LOADED)
-  message("Cannot find NASM compiler!")
-endif(NOT CMAKE_ASM_NASM_COMPILER_LOADED)
+project(HryOS C CXX ASM_NASM)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_FLAGS
     "${CMAKE_CXX_FLAGS} -ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffreestanding -Wall -Wextra")
-set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -felf32")
+set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_FLAGS} -felf32")
 set(LINKER_SCRIPT "${PROJECT_SOURCE_DIR}/scripts/linker.ld")
 set(CMAKE_EXE_LINKER_FLAGS
     "${CMAKE_EXE_LINKER_FLAGS} -T ${LINKER_SCRIPT} -ffreestanding -nostdlib -lgcc"
