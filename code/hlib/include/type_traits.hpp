@@ -263,6 +263,9 @@ namespace hlib
     {
     };
 
+    template<typename T>
+    inline constexpr bool is_trivial_v = is_trivial<T>::value;
+
     // is_pointer
 
     /*!
