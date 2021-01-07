@@ -23,7 +23,6 @@
 
 #include "config.hpp"
 #include "multiboot.h"
-#include "sys_calls.hpp"
 
 static int task_count = 0;
 static mutex terminal_mutex;
@@ -64,7 +63,7 @@ void task_base(const vec2u& pos)
 
         terminal_mutex.unlock();
 
-        sys_calls::sleep_ms(1000);
+        scheduler::sleep_ms(1000);
     }
 }
 
@@ -80,7 +79,7 @@ int spanko()
     terminal_mutex.spinlock();
 
     terminal::print_line("Mam spanko");
-    sys_calls::sleep_ms(2000);
+    scheduler::sleep_ms(2000);
     terminal::print_line("No i juz");
 
     terminal_mutex.unlock();
@@ -138,7 +137,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 
     command_line::register_command("wait", [] {
         auto pid = scheduler::create_process("wait", spanko);
-        sys_calls::wait_for(pid.value());
+        scheduler::wait_for(pid.value());
     });
 
     scheduler::init();

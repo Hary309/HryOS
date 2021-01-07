@@ -14,7 +14,6 @@
 #include "fault.hpp"
 #include "isr.hpp"
 #include "serial_port.hpp"
-#include "syscall_handler.hpp"
 
 using IRQ_t = int();
 
@@ -191,11 +190,6 @@ void setup_pic_interrupts()
     set_idt_entry(PIC2_OFFSET + 7, isr15, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
 }
 
-void setup_syscall()
-{
-    set_idt_entry(50, syscall, gdt::KERNEL_CODE_SELECTOR, gate_type::interrupt_32, 0);
-}
-
 extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* regs)
 {
     interrupts::disable();
@@ -258,11 +252,8 @@ void interrupts::init()
 
     setup_fault();
     setup_pic_interrupts();
-    setup_syscall();
 
     load_idtp();
-
-    syscall_init();
 
     logger::info("Interrupts initialized");
 }

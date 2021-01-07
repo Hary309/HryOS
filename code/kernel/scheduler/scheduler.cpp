@@ -244,6 +244,8 @@ void scheduler::sleep_ms(uint32_t time)
         current_process->state_data = process::sleep_data{ pit::get_timer() + time };
 
         logger::info("Process {} sleep {}ms", current_process->pid, time);
+
+        reschedule();
     }
 }
 
@@ -255,6 +257,8 @@ void scheduler::wait_for(pid_t pid)
         current_process->state_data = process::waiting_data{ pid };
 
         logger::info("Process {} waiting for {}", current_process->pid, pid);
+
+        reschedule();
     }
 }
 
