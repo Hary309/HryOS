@@ -15,6 +15,7 @@
 #include "array.hpp"
 #include "assert.hpp"
 #include "boot.hpp"
+#include "int_lock.hpp"
 #include "process.hpp"
 
 using namespace scheduler;
@@ -27,9 +28,9 @@ static hlib::array<process, PROCESS_COUNT> processes;
 
 static hlib::circular_buffer<process*, PROCESS_COUNT> ready_queue;
 
-static process* current_process = nullptr;
+process* current_process = nullptr;
 
-extern "C" void switch_to_task(process* current, process* next);
+extern "C" void switch_to_task(process* next);
 
 process* get_free_process()
 {
@@ -44,17 +45,10 @@ process* get_free_process()
     return nullptr;
 }
 
-void switch_process(process* p)
+void scheduler::reschedule()
 {
-    p->state = process::process::state::running;
+    direct_int_lock lock;
 
-    current_process = p;
-
-    switch_to_task(current_process, p);
-}
-
-void scheduler::tick(interrupts::registers* regs)
-{
     if (!is_enabled)
     {
         return;
@@ -71,14 +65,12 @@ void scheduler::tick(interrupts::registers* regs)
         }
     }
 
-    auto optional_p = ready_queue.pop();
-
-    if (!optional_p.has_value())
+    if (ready_queue.empty())
     {
         return;
     }
 
-    auto p = optional_p.value();
+    auto p = ready_queue.pop().value();
 
     if (p == current_process)
     {
@@ -96,7 +88,9 @@ void scheduler::tick(interrupts::registers* regs)
 
     if (p->state == process::state::ready)
     {
-        switch_process(p);
+        p->state = process::state::running;
+
+        switch_to_task(p);
     }
 }
 
@@ -109,6 +103,8 @@ void process_starter()
     HRY_ASSERT(current_process != nullptr, "current_process::task is nullptr");
 
     logger::info("Starting process {}", current_process->pid);
+
+    interrupts::enable();
 
     int result = current_process->task();
 
@@ -130,9 +126,22 @@ void process_starter()
     scheduler::idle();
 }
 
+struct stack_prepare
+{
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebp;
+    uint32_t ebx;
+    uint32_t edx;
+    uint32_t ecx;
+    uint32_t eax;
+
+    uint32_t return_addr;
+};
+
 hlib::optional<pid_t> scheduler::create_process(const char* name, process::function_t* task)
 {
-    logger::info("Creating process...");
+    logger::info("Creating process {}...", name);
 
     process* p = get_free_process();
 
@@ -150,9 +159,19 @@ hlib::optional<pid_t> scheduler::create_process(const char* name, process::funct
     p->task = task;
     p->start_time = pit::get_timer();
 
-    // TODO: prepare stack
+    p->stack_pointer = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE - sizeof(stack_prepare));
 
-    p->stack_pointer = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE);
+    auto* prepare = reinterpret_cast<stack_prepare*>(p->stack_pointer);
+
+    prepare->edi = 0;
+    prepare->esi = 0;
+    prepare->ebp = 0;
+    prepare->ebx = 0;
+    prepare->edx = 0;
+    prepare->ecx = 0;
+    prepare->eax = 0;
+
+    prepare->return_addr = reinterpret_cast<uint32_t>(process_starter);
 
     logger::info(
         "Added task {} stack: {x} - {x}", p->pid, reinterpret_cast<uint32_t>(&p->stack),

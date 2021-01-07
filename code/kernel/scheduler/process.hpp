@@ -7,7 +7,7 @@
 
 namespace scheduler
 {
-    static const int STACK_SIZE = 8 * 1024;
+    static const int STACK_SIZE = 1024 * 8;
 
     using pid_t = uint32_t;
 
@@ -42,7 +42,7 @@ namespace scheduler
         char name[16]{};
 
         uint32_t stack_pointer;
-        char stack[STACK_SIZE]{};
+        uint8_t stack[STACK_SIZE]{};
 
         state state = state::empty;
         Variant_t state_data;

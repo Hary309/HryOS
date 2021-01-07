@@ -3,45 +3,48 @@ struc process
     .esp   resd 1
 endstruc
 
-struc args
-    .current resd 1
-    .next resd 1
-endstruc
-
-;C declaration:
-;   void switch_to_task(registers* curr, registers* next);
-
 global switch_to_task
 
+extern current_process
+
+; C declaration:
+;   void switch_to_task(process* next);
+
 switch_to_task:
- 
-    ;Save previous task's state
- 
-    ;Notes:
-    ;  For cdecl; EAX, ECX, and EDX are already saved by the caller and don't need to be saved again
-    ;  EIP is already saved on the stack by the caller's "CALL" instruction
-    ;  The task isn't able` to change CR3 so it doesn't need to be saved
-    ;  Segment registers are constants (while running kernel code) so they don't need to be saved
- 
+    ; Push all registers to stack
+    push eax
+    push ecx
+    push edx
     push ebx
+    push ebp
     push esi
     push edi
-    push ebp
 
-    ; save current state
+    ; Check if current_process is null  
+    mov esi, [current_process]
+    and esi, esi
+    jz load_task
 
-    mov edi,[esp + args.current]
-    mov [edi + process.esp],esp
+    ; if no, save stack pointer
+    mov esi, [current_process]
+    mov [esi + process.esp], esp
  
-    ;Load next task's state
- 
-    mov esi, [esp + args.next]
+ load_task:
+    ; Load new stack pointer
+    mov esi, [esp + 4 * 7 + 4] ; 4 * all registers + return addr
     mov esp, [esi + process.esp]
- 
-    pop ebp
+
+    ; Update current process pointer
+    mov [current_process], esi
+
+    ; Restore all registers
+    ; Without esp, because it is already correct
     pop edi
     pop esi
+    pop ebp
     pop ebx
- 
-    ret   
+    pop edx
+    pop ecx
+    pop eax
 
+    ret
