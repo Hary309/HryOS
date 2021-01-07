@@ -37,28 +37,12 @@ namespace scheduler
             sleeping // sleep to @sleep_end
         };
 
-        struct registers
-        {
-            uint32_t edi;
-            uint32_t esi;
-            uint32_t ebp;
-            uint32_t esp;
-            uint32_t ebx;
-            uint32_t edx;
-            uint32_t ecx;
-            uint32_t eax;
-
-            uint32_t eip;
-            uint32_t cs;
-            uint32_t eflags;
-        };
-
         pid_t pid;
 
         char name[16]{};
 
+        uint32_t stack_pointer;
         char stack[STACK_SIZE]{};
-        registers registers;
 
         state state = state::empty;
         Variant_t state_data;

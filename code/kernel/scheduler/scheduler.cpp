@@ -29,6 +29,8 @@ static hlib::circular_buffer<process*, PROCESS_COUNT> ready_queue;
 
 static process* current_process = nullptr;
 
+extern "C" void switch_to_task(process* current, process* next);
+
 process* get_free_process()
 {
     for (auto& p : processes)
@@ -42,50 +44,13 @@ process* get_free_process()
     return nullptr;
 }
 
-void save_registers(process* p, interrupts::registers* regs)
-{
-    p->registers.edi = regs->edi;
-    p->registers.esi = regs->esi;
-    p->registers.ebp = regs->ebp;
-    p->registers.ebx = regs->ebx;
-    p->registers.edx = regs->edx;
-    p->registers.ecx = regs->ecx;
-    p->registers.eax = regs->eax;
-
-    // 16 because: irq id, eip, cs, eflags (4 * 4 bytes)
-    p->registers.esp = regs->esp + 16;
-
-    p->registers.eip = regs->eip;
-    p->registers.cs = regs->cs;
-    p->registers.eflags = regs->eflags;
-}
-
 void switch_process(process* p)
 {
     p->state = process::process::state::running;
 
     current_process = p;
 
-    asm("mov %0, %%esp" : : "g"(p->registers.esp));
-
-    // push for iret
-    asm("push %0" : : "g"(p->registers.eflags));
-    asm("push %0" : : "g"(p->registers.cs));
-    asm("push %0" : : "g"(p->registers.eip));
-
-    // push for popa
-    asm("push %0" : : "g"(p->registers.eax));
-    asm("push %0" : : "g"(p->registers.ecx));
-    asm("push %0" : : "g"(p->registers.edx));
-    asm("push %0" : : "g"(p->registers.ebx));
-    asm("push %0" : : "g"(p->registers.esp));
-    asm("push %0" : : "g"(p->registers.ebp));
-    asm("push %0" : : "g"(p->registers.esi));
-    asm("push %0" : : "g"(p->registers.edi));
-
-    asm("popa");
-
-    asm("iret");
+    switch_to_task(current_process, p);
 }
 
 void scheduler::tick(interrupts::registers* regs)
@@ -122,8 +87,6 @@ void scheduler::tick(interrupts::registers* regs)
 
     if (current_process != nullptr)
     {
-        save_registers(current_process, regs);
-
         if (current_process->state == process::state::running)
         {
             current_process->state = process::state::ready;
@@ -187,22 +150,13 @@ hlib::optional<pid_t> scheduler::create_process(const char* name, process::funct
     p->task = task;
     p->start_time = pit::get_timer();
 
-    p->registers.edi = 0;
-    p->registers.esi = 0;
-    p->registers.ebp = 0;
-    p->registers.esp = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE);
-    p->registers.ebx = 0;
-    p->registers.edx = 0;
-    p->registers.ecx = 0;
-    p->registers.eax = 0;
+    // TODO: prepare stack
 
-    p->registers.cs = gdt::KERNEL_CODE_SELECTOR;
-    p->registers.eflags = 0x200;
-    p->registers.eip = reinterpret_cast<uint32_t>(process_starter);
+    p->stack_pointer = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE);
 
     logger::info(
         "Added task {} stack: {x} - {x}", p->pid, reinterpret_cast<uint32_t>(&p->stack),
-        p->registers.esp);
+        p->stack_pointer);
 
     ready_queue.push_back(p);
 
