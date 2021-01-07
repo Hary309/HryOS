@@ -3,8 +3,6 @@
 
 #include <format.hpp>
 
-#include "concurrency/lock_guard.hpp"
-#include "concurrency/mutex.hpp"
 #include "drivers/keyboard.hpp"
 #include "drivers/pit.hpp"
 #include "drivers/vesa/vesa.hpp"
@@ -17,6 +15,8 @@
 #include "memory/gdt.hpp"
 #include "memory/kernel_heap.hpp"
 #include "memory/memory_map.hpp"
+#include "scheduler/lock_guard.hpp"
+#include "scheduler/mutex.hpp"
 #include "scheduler/scheduler.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
