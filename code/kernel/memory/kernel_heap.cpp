@@ -5,6 +5,7 @@
 
 #include "allocator.hpp"
 #include "assert.hpp"
+#include "kernel.hpp"
 #include "memory_map.hpp"
 
 static allocator* allocator;
@@ -29,10 +30,20 @@ void kheap::init()
     HRY_ASSERT(largest.type == mmap::entry::type::available, "No available memory segment to use");
     HRY_ASSERT(largest.length > 10 * 1024 * 1024, "Not enough memory");
 
-    auto kernel_offset = 2 * 1024 * 1024;
+    const uint32_t kernel_start = reinterpret_cast<uint32_t>(&_kernel_start);
+    const uint32_t kernel_end = reinterpret_cast<uint32_t>(&_kernel_end);
 
-    allocator = allocator::create(
-        static_cast<uintptr_t>(largest.addr + kernel_offset), largest.length - kernel_offset);
+    uint32_t heap_start = largest.addr;
+    uint32_t heap_end = largest.addr = largest.length;
+
+    uint32_t kernel_offset = 0;
+
+    if (heap_start >= kernel_start && heap_start <= kernel_end)
+    {
+        heap_start += align_to(kernel_end, 16);
+    }
+
+    allocator = allocator::create(heap_start, heap_end);
 
     allocator->print();
 

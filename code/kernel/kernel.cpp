@@ -1,3 +1,5 @@
+#include "kernel.hpp"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -61,13 +63,9 @@ int task()
 
 int spanko()
 {
-    terminal_mutex.spinlock();
-
     terminal::print_line("Mam spanko");
     scheduler::sleep_ms(2000);
     terminal::print_line("No i juz");
-
-    terminal_mutex.unlock();
 
     return 1;
 }
@@ -95,7 +93,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 #endif
 
     terminal::init();
-    // terminal::clear_screen();
+    terminal::clear_screen();
 
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC)
     {
@@ -122,7 +120,6 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
     });
 
     scheduler::init();
-    interrupts::enable();
 
     scheduler::reschedule();
 }

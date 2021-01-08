@@ -68,7 +68,7 @@ _start:
 	; Reset EFLAGS (push 0 on stack and pop this value to flags register	)
 	push 0
 	popf
-	
+
 	; Push the pointer to the Multiboot information structure.
 	push ebx
 	; Push the magic value.
