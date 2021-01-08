@@ -18,7 +18,7 @@
 
 static fonts::font* current_font = nullptr;
 
-static vesa::color buffered_screen[720][1280]{};
+static vesa::color* buffered_screen;
 
 static vec2u last_cursor_text_pos{ 0, 0 };
 
@@ -49,8 +49,18 @@ vesa::color terminal_to_vesa_color(terminal::color color)
 
 void set_pixel(const vec2u& pos, vesa::color color)
 {
-    buffered_screen[pos.y][pos.x] = color;
+    const auto& screen_size = vesa::get_screen_size();
+    auto* pixel = buffered_screen + pos.y * screen_size.x + pos.x;
+
+    *pixel = color;
     vesa::set_pixel(pos, color);
+}
+
+vesa::color get_buffered_pixel(const vec2u& pos)
+{
+    const auto& screen_size = vesa::get_screen_size();
+    auto* pixel = buffered_screen + pos.y * screen_size.x + pos.x;
+    return *pixel;
 }
 
 vec2u get_screen_pos(const vec2u& text_pos)
@@ -75,6 +85,10 @@ void terminal::impl::init()
 {
     current_font = &fonts::ZAP_LIGHT_16;
     set_cursor_at({ 0, 0 });
+
+    const auto& screen_size = vesa::get_screen_size();
+
+    buffered_screen = new vesa::color[screen_size.x * screen_size.y];
 }
 
 void terminal::impl::clear_screen()
@@ -138,7 +152,7 @@ void terminal::impl::set_cursor_at(const vec2u& text_pos)
     for (size_t y = 0; y < font_size.y; y++)
     {
         const auto pos = last_screen_pos + vec2u{ 2, y };
-        const auto& pixel = buffered_screen[pos.y][pos.x];
+        const auto& pixel = get_buffered_pixel(pos);
 
         vesa::set_pixel(pos, vesa::color::create(pixel.r, pixel.g, pixel.b));
     }
@@ -147,7 +161,7 @@ void terminal::impl::set_cursor_at(const vec2u& text_pos)
     for (size_t y = 0; y < font_size.y; y++)
     {
         const auto pos = screen_pos + vec2u{ 2, y };
-        const auto& pixel = buffered_screen[pos.y][pos.x];
+        const auto& pixel = get_buffered_pixel(pos);
 
         vesa::set_pixel(pos, vesa::color::create(255 - pixel.r, 255 - pixel.g, 255 - pixel.b));
     }
