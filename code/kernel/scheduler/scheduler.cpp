@@ -123,7 +123,7 @@ void process_starter()
     current_process->state = scheduler::process::state::empty;
     current_process = nullptr;
 
-    scheduler::idle();
+    scheduler::reschedule();
 }
 
 struct stack_prepare
@@ -238,6 +238,8 @@ void scheduler::init()
 
 void scheduler::sleep_ms(uint32_t time)
 {
+    interrupts::disable();
+
     if (current_process != nullptr)
     {
         current_process->state = process::state::sleeping;
@@ -251,6 +253,8 @@ void scheduler::sleep_ms(uint32_t time)
 
 void scheduler::wait_for(pid_t pid)
 {
+    interrupts::disable();
+
     if (current_process != nullptr)
     {
         current_process->state = process::state::waiting;
@@ -262,19 +266,12 @@ void scheduler::wait_for(pid_t pid)
     }
 }
 
-void scheduler::idle()
+void scheduler::halt()
 {
-    asm("push %0" : : "g"(&kernel_stack_top));
-    asm("pop %esp");
+    interrupts::disable();
 
     while (true)
     {
         asm("hlt");
     }
-}
-
-void scheduler::halt()
-{
-    interrupts::disable();
-    scheduler::idle();
 }

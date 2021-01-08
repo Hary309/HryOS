@@ -19,6 +19,5 @@ namespace scheduler
     void sleep_ms(uint32_t time);
     void wait_for(pid_t pid);
 
-    void idle();
     void halt();
 } // namespace scheduler

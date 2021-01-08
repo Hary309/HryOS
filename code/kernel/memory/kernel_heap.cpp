@@ -1,6 +1,7 @@
 #include "kernel_heap.hpp"
 
 #include "logger/logger.hpp"
+#include "terminal/command_line.hpp"
 
 #include "allocator.hpp"
 #include "assert.hpp"
@@ -38,6 +39,8 @@ void kheap::init()
     logger::info(
         "Kernel heap initialized! (available {} MB)",
         static_cast<uint32_t>(largest.length - kernel_offset) / 1024 / 1024);
+
+    command_line::register_command("mem", kheap::print);
 }
 
 void* kheap::allocate(size_t size)

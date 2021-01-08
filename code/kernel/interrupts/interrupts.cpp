@@ -225,7 +225,7 @@ extern "C" __attribute__((fastcall)) void fault_handler(interrupts::registers* r
     terminal::print_line("edi: {x}", regs->edi);
     terminal::print_line("eip: {x}", regs->eip);
 
-    scheduler::idle();
+    scheduler::halt();
 }
 
 // use fastcall to get regs in eax register to pass pointer not the value (avoid coping)
