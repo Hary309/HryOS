@@ -47,6 +47,8 @@ struct idt_ptr
 static_assert(sizeof(idt_entry) == 8, "Wrong idt_entry size");
 static_assert(sizeof(idt_ptr) == 6, "Wrong idt_ptr size");
 
+static bool interrupts_lock = true;
+
 // error messages
 static hlib::array<const char*, 21> ERROR_MESSAGES{ "Divide Error",
                                                     "Debug Exception",
@@ -258,6 +260,11 @@ void interrupts::init()
     logger::info("Interrupts initialized");
 }
 
+void interrupts::late_init()
+{
+    interrupts_lock = false;
+}
+
 void interrupts::register_isr_callback(int irq_id, interrupts::callback_t callback)
 {
     if (irq_id < 16)
@@ -268,10 +275,16 @@ void interrupts::register_isr_callback(int irq_id, interrupts::callback_t callba
 
 void interrupts::enable()
 {
-    asm("sti");
+    if (!interrupts_lock)
+    {
+        asm("sti");
+    }
 }
 
 void interrupts::disable()
 {
-    asm("cli");
+    if (!interrupts_lock)
+    {
+        asm("cli");
+    }
 }

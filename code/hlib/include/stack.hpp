@@ -14,8 +14,6 @@ namespace hlib
         {
             bottom_ = new uint8_t[size];
             top_ = bottom_ + size;
-
-            fill_n(top_, size, 0u);
         }
 
         template<typename T>
@@ -23,7 +21,7 @@ namespace hlib
         {
             static_assert(hlib::is_trivial_v<T>, "T has to be trivial!");
 
-            auto new_top = top_ - sizeof(T);
+            auto* new_top = top_ - sizeof(T);
 
             if (new_top >= bottom_)
             {
@@ -39,7 +37,7 @@ namespace hlib
 
             auto new_top = top_ + sizeof(T);
 
-            if (new_top > bottom_ > size_)
+            if (new_top > bottom_ + size_)
             {
                 return {};
             }

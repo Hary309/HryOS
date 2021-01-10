@@ -25,6 +25,7 @@ namespace interrupts
     using callback_t = void(registers*);
 
     void init();
+    void late_init();
 
     void register_isr_callback(int irq_id, callback_t callback);
 

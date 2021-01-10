@@ -38,7 +38,7 @@ class allocator
         void print()
         {
             logger::info(
-                "{x} <-> {x} <-> {x} :: Size: {x} :: State: {}", reinterpret_cast<uint32_t>(prev),
+                "{x} <-> {x} <-> {x} :: Size: {} :: State: {}", reinterpret_cast<uint32_t>(prev),
                 reinterpret_cast<uint32_t>(this), reinterpret_cast<uint32_t>(next), size,
                 state == state::allocated ? "ALLOCATED" : "FREE");
         }
@@ -48,8 +48,15 @@ public:
     static constexpr uintptr_t ALIGNED = 8;
 
 public:
-    [[nodiscard]] static allocator* create(uintptr_t memory_start, size_t memory_length)
+    [[nodiscard]] static allocator* create(uintptr_t memory_start, uintptr_t memory_end)
     {
+        if (memory_start > memory_end)
+        {
+            return nullptr;
+        }
+
+        size_t memory_length = memory_end - memory_start;
+
         if (memory_length < (sizeof(allocator) + sizeof(block)))
         {
             return nullptr;
@@ -58,10 +65,10 @@ public:
         allocator* heap = reinterpret_cast<allocator*>(memory_start);
 
         heap->memory_start_ = memory_start;
-        heap->memory_length_ = memory_length;
+        heap->memory_length_ = memory_end - memory_start;
 
         auto* head = reinterpret_cast<block*>(memory_start + sizeof(allocator));
-        auto* tail = reinterpret_cast<block*>(memory_start + memory_length - sizeof(block));
+        auto* tail = reinterpret_cast<block*>(memory_end - sizeof(block));
         auto* free = head + 1;
 
         head->prev = nullptr;
@@ -91,33 +98,33 @@ public:
 
         logger::info("Allocating {}...", size);
 
-        block* new_block = find_fit(size);
+        block* block_to_allocate = find_fit(size);
 
-        if (new_block == nullptr)
+        if (block_to_allocate == nullptr)
         {
             return 0;
         }
 
-        if (new_block->size >= size + sizeof(block))
+        if (block_to_allocate->size >= size + sizeof(block))
         {
             block* new_free_block = reinterpret_cast<block*>(
-                reinterpret_cast<uintptr_t>(new_block) + sizeof(block) + size);
-            block* next = new_block->next;
+                reinterpret_cast<uintptr_t>(block_to_allocate) + sizeof(block) + size);
+            block* next = block_to_allocate->next;
 
             new_free_block->next = next;
-            new_free_block->prev = new_block;
+            new_free_block->prev = block_to_allocate;
             new_free_block->size = calc_size_between(next, new_free_block);
             new_free_block->state = block::state::free;
 
-            new_block->next = new_free_block;
-            new_block->size = size;
+            block_to_allocate->next = new_free_block;
+            block_to_allocate->size = size;
 
             next->prev = new_free_block;
         }
 
-        new_block->state = block::state::allocated;
+        block_to_allocate->state = block::state::allocated;
 
-        return new_block->get_data_address();
+        return block_to_allocate->get_data_address();
     }
 
     void free(uintptr_t addr)

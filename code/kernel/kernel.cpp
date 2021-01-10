@@ -121,5 +121,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 
     scheduler::init();
 
+    interrupts::late_init();
+
     scheduler::reschedule();
 }

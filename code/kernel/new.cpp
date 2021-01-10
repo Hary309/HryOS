@@ -2,12 +2,14 @@
 
 void* operator new(size_t size)
 {
-    return kheap::allocate(size);
+    auto* ret = kheap::allocate(size);
+    return ret;
 }
 
 void* operator new[](size_t size)
 {
-    return kheap::allocate(size);
+    auto* ret = kheap::allocate(size);
+    return ret;
 }
 
 void operator delete(void* ptr)

@@ -2,12 +2,13 @@
 
 #include <stdint.h>
 
+#include <stack.hpp>
 #include <string_view.hpp>
 #include <variant.hpp>
 
 namespace scheduler
 {
-    static const int STACK_SIZE = 1024 * 8;
+    static const int STACK_SIZE = 1024;
 
     using pid_t = uint32_t;
 
@@ -41,8 +42,7 @@ namespace scheduler
 
         char name[16]{};
 
-        uint32_t stack_pointer;
-        uint8_t stack[STACK_SIZE]{};
+        hlib::stack* stack;
 
         state state = state::empty;
         Variant_t state_data;

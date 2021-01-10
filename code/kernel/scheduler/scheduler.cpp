@@ -9,6 +9,7 @@
 #include "interrupts/interrupts.hpp"
 #include "logger/logger.hpp"
 #include "memory/gdt.hpp"
+#include "memory/kernel_heap.hpp"
 #include "terminal/command_line.hpp"
 #include "terminal/terminal.hpp"
 
@@ -108,6 +109,8 @@ void process_starter()
 
     int result = current_process->task();
 
+    interrupts::disable();
+
     logger::info("Process {} ended with result {}", current_process->pid, result);
 
     for (auto& p : processes)
@@ -126,21 +129,10 @@ void process_starter()
     scheduler::reschedule();
 }
 
-struct stack_prepare
-{
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebp;
-    uint32_t ebx;
-    uint32_t edx;
-    uint32_t ecx;
-    uint32_t eax;
-
-    uint32_t return_addr;
-};
-
 hlib::optional<pid_t> scheduler::create_process(const char* name, process::function_t* task)
 {
+    direct_int_lock lock;
+
     logger::info("Creating process {}...", name);
 
     process* p = get_free_process();
@@ -151,7 +143,6 @@ hlib::optional<pid_t> scheduler::create_process(const char* name, process::funct
         return {};
     }
 
-    hlib::fill_n(p->stack, STACK_SIZE, 0);
     hlib::copy_n(name, 16, p->name);
 
     p->pid = static_cast<int32_t>(p - processes.begin());
@@ -159,23 +150,19 @@ hlib::optional<pid_t> scheduler::create_process(const char* name, process::funct
     p->task = task;
     p->start_time = pit::get_timer();
 
-    p->stack_pointer = reinterpret_cast<uint32_t>(p->stack + STACK_SIZE - sizeof(stack_prepare));
+    p->stack = new hlib::stack(STACK_SIZE);
 
-    auto* prepare = reinterpret_cast<stack_prepare*>(p->stack_pointer);
+    p->stack->push(reinterpret_cast<uint32_t>(process_starter));
 
-    prepare->edi = 0;
-    prepare->esi = 0;
-    prepare->ebp = 0;
-    prepare->ebx = 0;
-    prepare->edx = 0;
-    prepare->ecx = 0;
-    prepare->eax = 0;
+    p->stack->push<uint32_t>(0); // eax
+    p->stack->push<uint32_t>(0); // ecx
+    p->stack->push<uint32_t>(0); // edx
+    p->stack->push<uint32_t>(0); // ebx
+    p->stack->push<uint32_t>(0); // ebp
+    p->stack->push<uint32_t>(0); // esi
+    p->stack->push<uint32_t>(0); // edi
 
-    prepare->return_addr = reinterpret_cast<uint32_t>(process_starter);
-
-    logger::info(
-        "Added task {} stack: {x} - {x}", p->pid, reinterpret_cast<uint32_t>(&p->stack),
-        p->stack_pointer);
+    logger::info("Added task {}", p->pid);
 
     ready_queue.push_back(p);
 
@@ -193,6 +180,8 @@ process* scheduler::get_current_process()
 
 void list_process()
 {
+    direct_int_lock lock;
+
     terminal::print_line("Processes");
     terminal::print_line("---------------");
 
@@ -211,7 +200,7 @@ void list_process()
 
             terminal::move_cursor({ 30, pos.y });
             terminal::print("{}", state_to_text(p.state));
-
+            terminal::put_char(' ');
             terminal::next_line();
         }
     }
