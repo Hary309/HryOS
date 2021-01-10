@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
+set(CMAKE_C_COMPILER i686-elf-gcc)
+set(CMAKE_CXX_COMPILER i686-elf-g++)
+set(CMAKE_ASM_NASM_COMPILER nasm)
+
 # required for cross compiler
 set(CMAKE_C_COMPILER_WORKS 1)
 set(CMAKE_CXX_COMPILER_WORKS 1)
