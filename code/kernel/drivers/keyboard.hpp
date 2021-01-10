@@ -106,7 +106,8 @@ namespace keyboard
     void init();
 
     bool is_buffer_empty();
-    hlib::optional<key_event> pull_key();
+    key_event pull_key();
+    hlib::optional<key_event> try_pull_key();
 
     char map_key_to_ascii(keyboard::key key);
 } // namespace keyboard

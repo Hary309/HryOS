@@ -16,6 +16,9 @@ namespace scheduler
 
     void init();
 
+    void block_current_process(enum process::blocked_data::type type);
+    void notify_blocked(enum process::blocked_data::type type);
+
     void sleep_ms(uint32_t time);
     void wait_for(pid_t pid);
 

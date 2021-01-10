@@ -26,14 +26,22 @@ namespace scheduler
             pid_t pid;
         };
 
-        using Variant_t = hlib::variant<sleep_data, waiting_data>;
+        struct blocked_data
+        {
+            enum type
+            {
+                io
+            } value;
+        };
+
+        using Variant_t = hlib::variant<sleep_data, waiting_data, blocked_data>;
 
         enum class state
         {
             empty,   // not defined
             running, // currently running
             ready,   // ready to run
-            blocked, // blocked by IO
+            blocked, // blocked by sth
             waiting, // waiting for process to end
             sleeping // sleep to @sleep_end
         };

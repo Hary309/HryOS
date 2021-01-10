@@ -110,15 +110,7 @@ int terminal_process()
 {
     while (true)
     {
-        // TODO: don't waste processor, do waiting with blocking process
-        while (!keyboard::is_buffer_empty())
-        {
-            auto e = keyboard::pull_key();
-            if (e.has_value())
-            {
-                send_input(e.value());
-            }
-        }
+        send_input(keyboard::pull_key());
     }
 
     return 0;

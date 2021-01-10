@@ -29,6 +29,8 @@ void on_isr_callback(interrupts::registers* /*regs*/)
     key_event.state = static_cast<keyboard::button_state>((key_code & 0b10000000) >> 7);
 
     buffer.push_back(key_event);
+
+    scheduler::notify_blocked(scheduler::process::blocked_data::io);
 }
 
 void keyboard::init()
@@ -45,7 +47,17 @@ bool keyboard::is_buffer_empty()
     return buffer.empty();
 }
 
-hlib::optional<keyboard::key_event> keyboard::pull_key()
+keyboard::key_event keyboard::pull_key()
+{
+    if (is_buffer_empty())
+    {
+        scheduler::block_current_process(scheduler::process::blocked_data::io);
+    }
+
+    return buffer.pop().value();
+}
+
+hlib::optional<keyboard::key_event> keyboard::try_pull_key()
 {
     return buffer.pop();
 }

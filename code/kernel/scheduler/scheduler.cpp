@@ -225,6 +225,32 @@ void scheduler::init()
     logger::info("Scheduler initialized");
 }
 
+void scheduler::block_current_process(enum process::blocked_data::type type)
+{
+    direct_int_lock lock;
+
+    if (current_process != nullptr)
+    {
+        current_process->state = process::state::blocked;
+        current_process->state_data = process::blocked_data{ type };
+        reschedule();
+    }
+}
+
+void scheduler::notify_blocked(enum process::blocked_data::type type)
+{
+    for (auto& process : processes)
+    {
+        if (process.state == process::state::blocked &&
+            process.state_data.get<process::blocked_data>().value().value == type)
+        {
+            process.state = process::state::ready;
+
+            ready_queue.push_front(&process);
+        }
+    }
+}
+
 void scheduler::sleep_ms(uint32_t time)
 {
     interrupts::disable();
@@ -234,7 +260,8 @@ void scheduler::sleep_ms(uint32_t time)
         current_process->state = process::state::sleeping;
         current_process->state_data = process::sleep_data{ pit::get_timer() + time };
 
-        logger::info("Process {} sleep {}ms", current_process->pid, time);
+        logger::info(
+            "Process {} '{}' sleep {}ms", current_process->pid, current_process->name, time);
 
         reschedule();
     }
@@ -249,7 +276,8 @@ void scheduler::wait_for(pid_t pid)
         current_process->state = process::state::waiting;
         current_process->state_data = process::waiting_data{ pid };
 
-        logger::info("Process {} waiting for {}", current_process->pid, pid);
+        logger::info(
+            "Process {} '{}' waiting for {}", current_process->pid, current_process->name, pid);
 
         reschedule();
     }
