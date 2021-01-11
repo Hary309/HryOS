@@ -32,3 +32,25 @@ public:
 private:
     int_lock lock_;
 };
+
+class weak_int_lock
+{
+public:
+    weak_int_lock()
+    {
+        was_enabled_ = interrupts::enabled();
+        lock_.lock();
+    }
+
+    ~weak_int_lock()
+    {
+        if (was_enabled_)
+        {
+            lock_.unlock();
+        }
+    }
+
+private:
+    bool was_enabled_ = false;
+    int_lock lock_;
+};

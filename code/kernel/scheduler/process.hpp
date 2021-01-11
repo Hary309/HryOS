@@ -8,7 +8,7 @@
 
 namespace scheduler
 {
-    static const int STACK_SIZE = 1024;
+    static const int STACK_SIZE = 1024 * 16;
 
     using pid_t = uint32_t;
 
@@ -38,12 +38,13 @@ namespace scheduler
 
         enum class state
         {
-            empty,   // not defined
-            running, // currently running
-            ready,   // ready to run
-            blocked, // blocked by sth
-            waiting, // waiting for process to end
-            sleeping // sleep to @sleep_end
+            empty,    // not defined
+            running,  // currently running
+            ready,    // ready to run
+            blocked,  // blocked by sth
+            waiting,  // waiting for process to end
+            sleeping, // sleep to @sleep_end
+            count     // count of states
         };
 
         pid_t pid;
@@ -69,6 +70,7 @@ namespace scheduler
             case process::state::waiting: return "WAITING";
             case process::state::sleeping: return "SLEEPING";
             case process::state::empty: return "EMPTY";
+            default:;
         }
 
         return "UNKNOWN";

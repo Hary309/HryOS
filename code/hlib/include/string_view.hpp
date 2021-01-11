@@ -34,7 +34,7 @@ namespace hlib
 
         template<const size_type Size>
         constexpr string_view(const element_type (&begin)[Size])
-            : begin_(const_cast<iterator>(begin)), end_(const_cast<iterator>(begin + Size))
+            : begin_(const_cast<iterator>(begin)), end_(const_cast<iterator>(begin + Size - 1))
         {
         }
 

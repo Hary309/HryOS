@@ -2,6 +2,8 @@
 
 #include "logger/logger.hpp"
 #include "scheduler/int_lock.hpp"
+#include "scheduler/lock_guard.hpp"
+#include "scheduler/mutex.hpp"
 #include "terminal/command_line.hpp"
 
 #include "allocator.hpp"
@@ -50,16 +52,17 @@ void kheap::init()
 
     logger::info(
         "Kernel heap initialized! (available {} MB)",
-        static_cast<uint32_t>(largest.length - kernel_offset) / 1024 / 1024);
+        static_cast<uint32_t>(heap_end - heap_start) / 1024 / 1024);
 
     command_line::register_command("mem", kheap::print);
 }
 
 void* kheap::allocate(size_t size)
 {
+    weak_int_lock lock;
+
     HRY_ASSERT(allocator != nullptr, "Kernel Heap not initialized!");
 
-    direct_int_lock lock;
     void* result = reinterpret_cast<void*>(allocator->allocate(size));
 
     HRY_ASSERT(result != nullptr, "Not enough memory!");
@@ -69,7 +72,7 @@ void* kheap::allocate(size_t size)
 
 void kheap::free(void* addr)
 {
-    direct_int_lock lock;
+    weak_int_lock lock;
     allocator->free(reinterpret_cast<uintptr_t>(addr));
 }
 

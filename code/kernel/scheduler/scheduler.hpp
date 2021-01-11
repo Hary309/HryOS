@@ -9,7 +9,7 @@ namespace scheduler
 {
     void reschedule();
 
-    hlib::optional<pid_t> create_process(const char* name, process::function_t* task);
+    pid_t create_process(const char* name, process::function_t* task);
     void terminate_process(pid_t pid);
 
     process* get_current_process();

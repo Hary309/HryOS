@@ -49,6 +49,8 @@ static_assert(sizeof(idt_ptr) == 6, "Wrong idt_ptr size");
 
 static bool interrupts_lock = true;
 
+static bool interrupts_enabled = false;
+
 // error messages
 static hlib::array<const char*, 21> ERROR_MESSAGES{ "Divide Error",
                                                     "Debug Exception",
@@ -240,12 +242,16 @@ extern "C" __attribute__((fastcall)) void pic_handler(interrupts::registers* reg
 
     port::out_byte(PIC1, 0x20);
 
+    interrupts_enabled = false;
+
     auto callback = isr_callbacks[regs->irq_id];
 
     if (callback != nullptr)
     {
         callback(regs);
     }
+
+    interrupts_enabled = true;
 }
 
 void interrupts::init()
@@ -277,6 +283,7 @@ void interrupts::enable()
 {
     if (!interrupts_lock)
     {
+        interrupts_enabled = true;
         asm("sti");
     }
 }
@@ -285,6 +292,12 @@ void interrupts::disable()
 {
     if (!interrupts_lock)
     {
+        interrupts_enabled = false;
         asm("cli");
     }
+}
+
+bool interrupts::enabled()
+{
+    return interrupts_enabled;
 }

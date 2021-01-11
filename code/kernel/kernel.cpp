@@ -29,6 +29,10 @@
 static int task_count = 0;
 static mutex terminal_mutex;
 
+// for global dctor
+void* __dso_handle;
+void* __cxa_atexit;
+
 void shutdown_callback()
 {
     terminal::print_line("Shutting down...");
@@ -116,7 +120,7 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
 
     command_line::register_command("wait", [] {
         auto pid = scheduler::create_process("wait", spanko);
-        scheduler::wait_for(pid.value());
+        scheduler::wait_for(pid);
     });
 
     scheduler::init();

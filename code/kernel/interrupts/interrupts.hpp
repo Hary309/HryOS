@@ -31,4 +31,6 @@ namespace interrupts
 
     void enable();
     void disable();
+
+    bool enabled();
 } // namespace interrupts
