@@ -245,12 +245,13 @@ void scheduler::block_current_process(enum process::blocked_data::type type)
 {
     if (current_process != nullptr)
     {
-        interrupts::disable();
+        {
+            direct_int_lock lock;
+            current_process->state = process::state::blocked;
+            current_process->state_data = process::blocked_data{ type };
 
-        current_process->state = process::state::blocked;
-        current_process->state_data = process::blocked_data{ type };
-
-        get_list(process::state::blocked).push_back(current_process);
+            get_list(process::state::blocked).push_back(current_process);
+        }
 
         reschedule();
     }
@@ -267,15 +268,16 @@ void scheduler::sleep_ms(uint32_t time)
 {
     if (current_process != nullptr)
     {
-        interrupts::disable();
+        {
+            direct_int_lock lock;
+            current_process->state = process::state::sleeping;
+            current_process->state_data = process::sleep_data{ pit::get_timer() + time };
 
-        current_process->state = process::state::sleeping;
-        current_process->state_data = process::sleep_data{ pit::get_timer() + time };
+            get_list(process::state::sleeping).push_back(current_process);
 
-        get_list(process::state::sleeping).push_back(current_process);
-
-        logger::info(
-            "Process {} '{}' sleep {}ms", current_process->pid, current_process->name, time);
+            logger::info(
+                "Process {} '{}' sleep {}ms", current_process->pid, current_process->name, time);
+        }
 
         reschedule();
     }
@@ -285,15 +287,16 @@ void scheduler::wait_for(pid_t pid)
 {
     if (current_process != nullptr)
     {
-        interrupts::disable();
+        {
+            direct_int_lock lock;
+            current_process->state = process::state::waiting;
+            current_process->state_data = process::waiting_data{ pid };
 
-        current_process->state = process::state::waiting;
-        current_process->state_data = process::waiting_data{ pid };
+            get_list(process::state::waiting).push_back(current_process);
 
-        get_list(process::state::waiting).push_back(current_process);
-
-        logger::info(
-            "Process {} '{}' waiting for {}", current_process->pid, current_process->name, pid);
+            logger::info(
+                "Process {} '{}' waiting for {}", current_process->pid, current_process->name, pid);
+        }
 
         reschedule();
     }
