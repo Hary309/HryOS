@@ -375,11 +375,12 @@ namespace hlib
             {
                 node* result = free_;
 
+                free_ = free_->next;
+
                 result->value = value;
                 result->next = nullptr;
                 result->prev = nullptr;
 
-                free_ = free_->next;
                 return result;
             }
 
