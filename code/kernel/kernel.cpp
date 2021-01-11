@@ -44,7 +44,7 @@ void task_base(const vec2u& pos)
 
     while (1)
     {
-        terminal_mutex.spinlock();
+        terminal_mutex.lock();
 
         auto cursor_pos = terminal::get_cursor_pos();
 
@@ -67,9 +67,13 @@ int task()
 
 int spanko()
 {
+    terminal_mutex.lock();
+
     terminal::print_line("Mam spanko");
     scheduler::sleep_ms(2000);
     terminal::print_line("No i juz");
+
+    terminal_mutex.unlock();
 
     return 1;
 }

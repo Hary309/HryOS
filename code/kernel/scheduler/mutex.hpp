@@ -3,24 +3,31 @@
 class mutex
 {
 public:
-    bool try_locK()
+    mutex() : flag_(0)
     {
-        return __sync_bool_compare_and_swap(&blocked_, false, true);
+        __sync_lock_release(&flag_);
     }
 
-    void spinlock()
+    void lock()
     {
-        while (!try_locK())
+        while (__sync_lock_test_and_set(&flag_, 1U))
         {
-            asm("pause");
+            while (flag_)
+            {
+            }
         }
+    }
+
+    bool try_lock()
+    {
+        return (__sync_lock_test_and_set(&flag_, 1U) == 1U);
     }
 
     void unlock()
     {
-        blocked_ = false;
+        __sync_lock_release(&flag_);
     }
 
 private:
-    volatile bool blocked_ = false;
+    char flag_;
 };

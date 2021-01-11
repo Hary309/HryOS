@@ -39,8 +39,6 @@ void kheap::init()
     uint32_t heap_start = largest.addr;
     uint32_t heap_end = largest.addr = largest.length;
 
-    uint32_t kernel_offset = 0;
-
     if (heap_start >= kernel_start && heap_start <= kernel_end)
     {
         heap_start += align_to(kernel_end, 16);

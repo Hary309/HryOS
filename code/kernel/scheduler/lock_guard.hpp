@@ -2,12 +2,13 @@
 
 #include "mutex.hpp"
 
+template<typename Mutex>
 class lock_guard
 {
 public:
-    lock_guard(mutex& m) : mutex_(m)
+    lock_guard(Mutex& m) : mutex_(m)
     {
-        m.spinlock();
+        mutex_.lock();
     }
 
     ~lock_guard()
@@ -16,5 +17,5 @@ public:
     }
 
 private:
-    mutex& mutex_;
+    Mutex& mutex_;
 };
