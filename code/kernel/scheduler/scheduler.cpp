@@ -142,6 +142,8 @@ void process_starter()
         return p->state_data.get<process::waiting_data>().value().pid == current_process->pid;
     });
 
+    // TODO: add current_process to list to remove process later
+
     current_process->state = scheduler::process::state::empty;
     current_process = nullptr;
 
@@ -187,6 +189,7 @@ pid_t scheduler::create_process(const char* name, process::function_t* task)
 
 void scheduler::terminate_process(pid_t /*pid*/)
 {
+    // TODO: impl
 }
 
 process* scheduler::get_current_process()
