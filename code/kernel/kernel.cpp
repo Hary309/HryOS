@@ -60,7 +60,8 @@ void task_base(const vec2u& pos)
 
 int task()
 {
-    task_base({ static_cast<uint32_t>(10 + 10 * (task_count++ % 7)), 0 });
+    task_base({ static_cast<uint32_t>(10 + 10 * (task_count % 7)),
+                static_cast<unsigned int>(task_count++ / 7) });
 
     return 0;
 }

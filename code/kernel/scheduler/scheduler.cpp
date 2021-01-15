@@ -24,8 +24,6 @@
 
 using namespace scheduler;
 
-const auto PROCESS_COUNT = 8;
-
 static bool is_enabled = false;
 
 static hlib::list<process> processes{};

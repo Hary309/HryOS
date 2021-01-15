@@ -12,9 +12,7 @@ public:
     {
         while (__sync_lock_test_and_set(&flag_, 1U))
         {
-            while (flag_)
-            {
-            }
+            asm("pause");
         }
     }
 
