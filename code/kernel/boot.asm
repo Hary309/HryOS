@@ -8,8 +8,8 @@ CHECKSUM equ -(MAGIC + FLAGS)             ; checksum of above, to prove we are m
 
 ; framebuffer
 FB_MODE   equ 0      ; 0 mode for linear graphics mode
-FB_WIDTH  equ 1280   ; screen witdth
-FB_HEIGHT equ 720    ; screen height
+FB_WIDTH  equ 800    ; screen witdth
+FB_HEIGHT equ 600    ; screen height
 FB_DEPTH  equ 32 	 ; bits per pixel
 
  

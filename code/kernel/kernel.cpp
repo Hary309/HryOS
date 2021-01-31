@@ -60,8 +60,8 @@ void task_base(const vec2u& pos)
 
 int task()
 {
-    task_base({ static_cast<uint32_t>(10 + 10 * (task_count % 7)),
-                static_cast<unsigned int>(task_count++ / 7) });
+    uint32_t pos = task_count++;
+    task_base({ 10 + 10 * (pos % 7), pos / 7 });
 
     return 0;
 }
@@ -69,11 +69,13 @@ int task()
 int spanko()
 {
     terminal_mutex.lock();
-
     terminal::print_line("Mam spanko");
-    scheduler::sleep_ms(2000);
-    terminal::print_line("No i juz");
+    terminal_mutex.unlock();
 
+    scheduler::sleep_ms(2000);
+
+    terminal_mutex.lock();
+    terminal::print_line("No i juz");
     terminal_mutex.unlock();
 
     return 1;
