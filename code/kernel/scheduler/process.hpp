@@ -41,9 +41,9 @@ namespace scheduler
             empty,    // not defined
             running,  // currently running
             ready,    // ready to run
-            blocked,  // blocked by sth
+            sleeping, // sleep to @sleep_timeout
             waiting,  // waiting for process to end
-            sleeping, // sleep to @sleep_end
+            blocked,  // blocked by sth
             count     // count of states
         };
 
@@ -51,7 +51,7 @@ namespace scheduler
 
         char name[16]{};
 
-        hlib::stack* stack;
+        hlib::stack stack{ STACK_SIZE };
 
         state state = state::empty;
         Variant_t state_data;

@@ -16,6 +16,11 @@ namespace hlib
             top_ = bottom_ + size;
         }
 
+        ~stack()
+        {
+            delete bottom_;
+        }
+
         template<typename T>
         void push(T&& value)
         {

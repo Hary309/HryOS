@@ -5,6 +5,7 @@
 #include <algorithm.hpp>
 #include <circular_buffer.hpp>
 #include <list.hpp>
+#include <memory.hpp>
 
 #include "drivers/pit.hpp"
 #include "interrupts/interrupts.hpp"
@@ -26,7 +27,7 @@ using namespace scheduler;
 
 static bool is_enabled = false;
 
-static hlib::list<process> processes{};
+static hlib::list<process*> processes{};
 
 using process_list_t = hlib::list<process*, true>;
 
@@ -142,9 +143,15 @@ void process_starter()
         return p->state_data.get<process::waiting_data>().value().pid == current_process->pid;
     });
 
-    // TODO: add current_process to list to remove process later
+    //switch to default stack before deallocation
+    asm("mov %0, %%esp" : : "g"(&kernel_stack_top));
 
-    current_process->state = scheduler::process::state::empty;
+    // remove process
+    processes.erase_if([](const auto& p) { return current_process == p; });
+
+    // TODO: use smart pointer
+    delete current_process;
+
     current_process = nullptr;
 
     scheduler::reschedule();
@@ -155,9 +162,9 @@ pid_t scheduler::create_process(const char* name, process::function_t* task)
     direct_int_lock int_lock;
     logger::info("Creating process '{}'...", name);
 
-    auto* p = processes.push_back({});
+    auto* p = new process();
 
-    HRY_ASSERT(p != nullptr, "Cannot create process!");
+    HRY_ASSERT(processes.push_back(p) != nullptr, "Cannot create process!");
 
     hlib::copy_n(name, 16, p->name);
 
@@ -168,17 +175,15 @@ pid_t scheduler::create_process(const char* name, process::function_t* task)
     p->task = task;
     p->start_time = pit::get_timer();
 
-    p->stack = new hlib::stack(STACK_SIZE);
+    p->stack.push(reinterpret_cast<uint32_t>(process_starter));
 
-    p->stack->push(reinterpret_cast<uint32_t>(process_starter));
-
-    p->stack->push<uint32_t>(0); // eax
-    p->stack->push<uint32_t>(0); // ecx
-    p->stack->push<uint32_t>(0); // edx
-    p->stack->push<uint32_t>(0); // ebx
-    p->stack->push<uint32_t>(0); // ebp
-    p->stack->push<uint32_t>(0); // esi
-    p->stack->push<uint32_t>(0); // edi
+    p->stack.push<uint32_t>(0); // eax
+    p->stack.push<uint32_t>(0); // ecx
+    p->stack.push<uint32_t>(0); // edx
+    p->stack.push<uint32_t>(0); // ebx
+    p->stack.push<uint32_t>(0); // ebp
+    p->stack.push<uint32_t>(0); // esi
+    p->stack.push<uint32_t>(0); // edi
 
     logger::info("Added task '{}'", p->name);
 
@@ -209,15 +214,15 @@ void list_process()
     {
         const auto& pos = terminal::get_cursor_pos();
 
-        if (p.state != scheduler::process::state::empty)
+        if (p->state != scheduler::process::state::empty)
         {
-            terminal::print("{} {}", p.pid, p.name);
+            terminal::print("{} {}", p->pid, p->name);
 
             terminal::move_cursor({ 20, pos.y });
-            terminal::print("{}s", (timer - p.start_time) / 1000);
+            terminal::print("{}s", (timer - p->start_time) / 1000);
 
             terminal::move_cursor({ 30, pos.y });
-            terminal::print("{}", state_to_text(p.state));
+            terminal::print("{}", state_to_text(p->state));
             terminal::next_line();
         }
     }

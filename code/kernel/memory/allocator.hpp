@@ -131,7 +131,7 @@ public:
     {
         block* node = reinterpret_cast<block*>(addr - sizeof(block));
 
-        logger::info("Freeing {x}", node);
+        logger::info("Freeing {}", node->size);
 
         bool found = false;
 

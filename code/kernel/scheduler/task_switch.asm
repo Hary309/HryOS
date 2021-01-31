@@ -1,6 +1,6 @@
 struc process
-    .pad   resb 20
-    .stack resd 1
+    .pad   resb 24
+    .stack_top resd 1
 endstruc
 
 struc stack
@@ -33,14 +33,12 @@ switch_to_task:
 
     ; if no, save stack pointer
     mov esi, [current_process]
-    mov esi, [esi + process.stack]
-    mov [esi + stack.top], esp
+    mov [esi + process.stack_top], esp
  
  load_task:
     ; Load new stack pointer
     mov esi, [esp + 4 * 7 + 4] ; 4 * all registers + return addr
-    mov edi, [esi + process.stack]
-    mov esp, [edi + stack.top]
+    mov esp, [esi + process.stack_top]
 
     ; Update current process pointer
     mov [current_process], esi

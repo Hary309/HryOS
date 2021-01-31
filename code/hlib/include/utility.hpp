@@ -5,19 +5,19 @@
 namespace hlib
 {
     template<typename T>
-    constexpr typename remove_reference<T>::type&& move(T&& t)
+    constexpr remove_reference_t<T>&& move(T&& t)
     {
-        return static_cast<typename remove_reference<T>::type&&>(t);
+        return static_cast<remove_reference_t<T>&&>(t);
     }
 
     template<typename T>
-    constexpr T&& forward(typename remove_reference<T>::type& t)
+    constexpr T&& forward(remove_reference_t<T>& t)
     {
         return static_cast<T&&>(t);
     }
 
     template<typename T>
-    constexpr T&& forward(typename remove_reference<T>::type&& t)
+    constexpr T&& forward(remove_reference_t<T>&& t)
     {
         return static_cast<T&&>(t);
     }

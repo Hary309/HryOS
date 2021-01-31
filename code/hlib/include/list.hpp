@@ -12,7 +12,7 @@ namespace hlib
     public:
         struct node
         {
-            node(const T& value) : value(value)
+            explicit node(const T& v) : value(v)
             {
             }
 
@@ -292,7 +292,7 @@ namespace hlib
             if (n == tail_)
                 tail_ = prev;
 
-            if (StoreErased)
+            if constexpr (StoreErased)
             {
                 n->next = free_;
                 n->prev = nullptr;
@@ -311,7 +311,7 @@ namespace hlib
 
             while (it != end())
             {
-                if (func(static_cast<T>(*it)))
+                if (func(it.node_->value))
                 {
                     auto to_delete = it;
                     it++;
@@ -371,17 +371,20 @@ namespace hlib
     private:
         node* get_free_node(const T& value)
         {
-            if (StoreErased && free_ != nullptr)
+            if constexpr (StoreErased)
             {
-                node* result = free_;
+                if (free_ != nullptr)
+                {
+                    node* result = free_;
 
-                free_ = free_->next;
+                    free_ = free_->next;
 
-                result->value = value;
-                result->next = nullptr;
-                result->prev = nullptr;
+                    result->value = hlib::move(value);
+                    result->next = nullptr;
+                    result->prev = nullptr;
 
-                return result;
+                    return result;
+                }
             }
 
             return new node(value);
