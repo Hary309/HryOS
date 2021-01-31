@@ -1,5 +1,7 @@
 ![imgs/logo.png](imgs/logo.png)
 
+logo made by my dear friend [Knayder](https://github.com/Knayder)
+
 # HryOS
 
 HryOS is a simple operating system made as university project.
