@@ -15,6 +15,8 @@ static allocator* allocator;
 
 void kheap::init()
 {
+    const uint64_t max_address = 4ull * 1024 * 1024 * 1024;
+
     auto entries = mmap::get_entries();
 
     mmap::entry largest{};
@@ -23,7 +25,7 @@ void kheap::init()
     {
         if (entry.type == mmap::entry::type::available)
         {
-            if (entry.length > largest.length)
+            if (entry.addr < max_address && entry.length > largest.length)
             {
                 largest = entry;
             }
@@ -35,6 +37,12 @@ void kheap::init()
 
     const uint32_t kernel_start = reinterpret_cast<uint32_t>(&_kernel_start);
     const uint32_t kernel_end = reinterpret_cast<uint32_t>(&_kernel_end);
+
+    // limit memory to 1 GB (avoid overflow :x)
+    if (largest.length > 1024 * 1024 * 1024)
+    {
+        largest.length = 1024 * 1024 * 1024;
+    }
 
     uint32_t heap_start = largest.addr;
     uint32_t heap_end = largest.addr = largest.length;
