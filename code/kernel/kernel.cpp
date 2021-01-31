@@ -69,13 +69,13 @@ int task()
 int spanko()
 {
     terminal_mutex.lock();
-    terminal::print_line("Mam spanko");
+    terminal::print_line("Falling asleep...");
     terminal_mutex.unlock();
 
     scheduler::sleep_ms(2000);
 
     terminal_mutex.lock();
-    terminal::print_line("No i juz");
+    terminal::print_line("Waking up...");
     terminal_mutex.unlock();
 
     return 1;
@@ -120,7 +120,6 @@ extern "C" void kernel_main(uint32_t magic, multiboot_info* mbi)
     command_line::init();
 
     command_line::register_command("shutdown", shutdown_callback);
-    command_line::register_command("crash", [] { int a = 213 / 0; });
 
     command_line::register_command("rt", [] { scheduler::create_process("timer", task); });
     command_line::register_command("sleep", [] { scheduler::create_process("sleep", spanko); });
